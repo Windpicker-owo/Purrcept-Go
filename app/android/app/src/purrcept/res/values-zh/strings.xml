@@ -1,0 +1,9 @@
+<resources>
+    <string name="scan_invitation_prompt">扫描 Purrcept 电脑端显示的配对二维码</string>
+    <string name="accessibility_description">仅在你开启设备操控后，允许已配对的 Purrcept Engine 读取和操作屏幕。可随时在 Purrcept Go 中停止操控。</string>
+    <string name="online_channel">设备连接</string>
+    <string name="online_title">Purrcept 设备在线</string>
+    <string name="online_text">正在连接你的 Engine，点按打开应用。</string>
+    <string name="stop">断开连接</string>
+    <string name="message_channel">聊天消息</string>
+</resources>

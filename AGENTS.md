@@ -1,12 +1,18 @@
 # AGENTS.md
 
-dsh-Go 是 DeepSeek Harness 的 Android 手机应用：Flutter 原生界面 + 纯 Dart 客户端 + 打过补丁的 DSH 引擎运行时（在 PRoot 里运行 `dsh web`）。改动前先读 [CONTRIBUTING.md](CONTRIBUTING.md)（贡献与验证契约）与 [docs/architecture.md](docs/architecture.md)。
+Purrcept Go 是 Purrcept Engine 的远程安卓设备与聊天入口，基于 dsh-Go fork。
+主体只在电脑运行，安卓不装配模型或本机引擎。当前入口为 `app/lib/purrcept/`，
+原生源集为 `app/android/app/src/purrcept/`。其余上游源码仅作为迁移参考，
+不应重新接入 DSH 服务。开始前读 `docs/purrcept-architecture.md` 与 CONTRIBUTING.md。
+Purrcept 的协议替换不要求兼容 DSH 协议。公开源码文档解释资源所有权、接管与恢复语义。
 
 ## 仓库布局
 
 ```
-app/                         Flutter App：原生界面、Riverpod 状态、l10n、手机操控
-app/lib/l10n/parts/          界面文案的中英文 ARB 输入
+app/lib/purrcept/             当前 Flutter 界面与原生服务状态投影
+app/lib/purrcept/l10n/        当前中英文 ARB 输入与标准生成物
+app/android/app/src/purrcept/ 当前 Kotlin/Java/资源源集
+app/lib/ 的其他目录           上游参考源码，不进入当前入口
 packages/dsh_client/         纯 Dart 客户端：HTTP/SSE、mux、会话与删除 API
 packages/dsh_remote/         远程传输：WebRTC / LAN / TURN / 中继
 runtime/                     打补丁的 DSH 引擎运行时
@@ -22,7 +28,7 @@ docs/                        架构、发布、路线图、用户指南
 按改动面选择验证，在 PR/报告里写实际执行的命令和结果。完整说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ```bash
-(cd app && flutter pub get && flutter analyze && flutter test)   # Flutter 应用
+(cd app && flutter pub get && flutter analyze && flutter test test/purrcept) # 当前应用
 (cd packages/dsh_client && dart pub get && dart analyze && dart test)
 (cd packages/dsh_remote && dart pub get && dart analyze && dart test)
 (cd sdk/plugin-kit && npm install && npm test)
@@ -47,7 +53,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 ### 源码、生成物与运行时补丁
 
 - 不手改生成物：`app/build/`、`.dart_tool/`、生成的 l10n 产物等；改输入后运行对应生成器。
-- 界面文案改 `app/lib/l10n/parts/*.arb`，中英文同步，再跑 `python3 app/tool/l10n_merge.py`；不要手改生成结果。
+- 当前界面文案改 `app/lib/purrcept/l10n/app_{zh,en}.arb`，中英文同步，再跑 `flutter gen-l10n`；不要手改生成结果。上游 parts 与合并器只用于旧实现参考。
 - 用户指南改 `docs/guide/`，再跑 `python3 app/tool/guide_sync.py`。
 - 引擎补丁在 `runtime/patches/`：补丁文件与 `pins.json` 保持同步，不手改正被补丁覆盖的产物。
 - 插件教学技能改 `sdk/plugin-kit/skill/` 或 SDK 对应输入，再跑 `node sdk/plugin-kit/scripts/sync-skill.mjs`。
@@ -56,7 +62,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 
 - 客户端、桥接、插件协议的改动，同时检查另一端的调用方与向后兼容。
 - 危险操作（删除会话、权限、凭据）以主机/引擎的实际回答为准，不用本地推断代替；失败要有稳定错误码，不静默吞掉。
-- 界面文案中英两版同步（`app/lib/l10n/parts/*.arb` 与对应 `.en.arb`）。
+- 当前界面文案中英两版同步（`app/lib/purrcept/l10n/app_zh.arb` 与 `app_en.arb`）。
 - 双语文档同步：README、CONTRIBUTING、SECURITY、docs/guide 中英两版同步。
 
 ### 凭据与隐私

@@ -1,0 +1,343 @@
+{
+  "name": "Purrcept Cel",
+  "version": "0.3.0",
+  "colors": {
+    "canvas": "#F2F4F7",
+    "atmosphere-sky": "#E2EBFC",
+    "atmosphere-peach": "#FCEEE2",
+    "surface": "#FFFFFF",
+    "surface-sunken": "#F3F5F8",
+    "surface-selected": "#E8ECF2",
+    "glass": "rgba(255, 255, 255, 0.78)",
+    "ink": "#15171A",
+    "ink-secondary": "#484D55",
+    "ink-muted": "#5E636B",
+    "ink-disabled": "#A3A7AD",
+    "on-ink": "#FFFFFF",
+    "outline": "#D3D8E0",
+    "outline-subtle": "#E4E8EE",
+    "focus-ring": "#2456D6",
+    "scrim": "rgba(21, 23, 26, 0.32)",
+    "brand": "#2456D6",
+    "brand-hover": "#1C47B8",
+    "brand-pressed": "#163A99",
+    "on-brand": "#FFFFFF",
+    "brand-container": "#E3EBFD",
+    "on-brand-container": "#173B8F",
+    "active": "#0A7480",
+    "active-container": "#DDF2F4",
+    "on-active-container": "#06525B",
+    "success": "#127236",
+    "success-container": "#E4F3E9",
+    "on-success-container": "#0F5A2B",
+    "waiting": "#9C5000",
+    "waiting-signal": "#F2A11F",
+    "waiting-container": "#FDF0DA",
+    "on-waiting-container": "#6B3800",
+    "failed": "#BC3329",
+    "failed-hover": "#A32B22",
+    "failed-pressed": "#8A1F17",
+    "failed-container": "#FBE8E5",
+    "on-failed-container": "#8A1F17",
+    "paused": "#6D4BC9",
+    "paused-container": "#EEE9FB",
+    "on-paused-container": "#3F2490",
+    "mascot-fur": "#FFFDF9",
+    "mascot-fur-shade": "#E9E2D8",
+    "mascot-blush": "#F3BDB3"
+  },
+  "typography": {
+    "display": {
+      "font": "700 48px/1.08 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "48px",
+      "fontWeight": 700,
+      "lineHeight": 1.08,
+      "letterSpacing": "-0.025em",
+      "fontFeature": null
+    },
+    "headline": {
+      "font": "700 28px/1.25 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "28px",
+      "fontWeight": 700,
+      "lineHeight": 1.25,
+      "letterSpacing": "-0.015em",
+      "fontFeature": null
+    },
+    "title": {
+      "font": "600 17px/1.45 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "17px",
+      "fontWeight": 600,
+      "lineHeight": 1.45,
+      "letterSpacing": null,
+      "fontFeature": null
+    },
+    "body": {
+      "font": "400 14px/1.6 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": 400,
+      "lineHeight": 1.6,
+      "letterSpacing": null,
+      "fontFeature": null
+    },
+    "body-long": {
+      "font": "400 16px/1.7 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "16px",
+      "fontWeight": 400,
+      "lineHeight": 1.7,
+      "letterSpacing": null,
+      "fontFeature": null
+    },
+    "label": {
+      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "13px",
+      "fontWeight": 600,
+      "lineHeight": 1.4,
+      "letterSpacing": null,
+      "fontFeature": null
+    },
+    "caption": {
+      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "fontSize": "12px",
+      "fontWeight": 500,
+      "lineHeight": 1.4,
+      "letterSpacing": null,
+      "fontFeature": null
+    },
+    "mono": {
+      "font": "500 13px/1.5 ui-monospace, \"SFMono-Regular\", Consolas, \"Microsoft YaHei\", \"PingFang SC\", monospace",
+      "fontFamily": "ui-monospace, \"SFMono-Regular\", Consolas, \"Microsoft YaHei\", \"PingFang SC\", monospace",
+      "fontSize": "13px",
+      "fontWeight": 500,
+      "lineHeight": 1.5,
+      "letterSpacing": null,
+      "fontFeature": "\"tnum\" 1, \"zero\" 1"
+    }
+  },
+  "rounded": {
+    "none": "0px",
+    "xs": "6px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "24px",
+    "full": "9999px"
+  },
+  "spacing": {
+    "base": "4px",
+    "xxs": "4px",
+    "xs": "8px",
+    "sm": "12px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "48px",
+    "3xl": "64px",
+    "4xl": "96px",
+    "gutter": "32px",
+    "gutter-narrow": "16px",
+    "island-gap": "12px",
+    "sidebar": "72px",
+    "inspector": "360px",
+    "content-max": "1600px",
+    "touch-target": "44px"
+  },
+  "breakpoints": {
+    "navigation": "768px",
+    "inspector": "1152px",
+    "workspace": "960px"
+  },
+  "elevation": {
+    "control": "0 1px 2px rgba(21, 23, 26, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+    "control-surface": "0 1px 2px rgba(21, 23, 26, 0.06)",
+    "well": "inset 0 1px 2px rgba(21, 23, 26, 0.06)",
+    "panel": "0 1px 2px rgba(21, 23, 26, 0.04), 0 8px 24px rgba(21, 23, 26, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
+    "lifted": "0 2px 4px rgba(21, 23, 26, 0.05), 0 12px 32px rgba(21, 23, 26, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
+    "overlay": "0 2px 6px rgba(21, 23, 26, 0.06), 0 16px 40px rgba(21, 23, 26, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7)",
+    "dialog": "0 4px 12px rgba(21, 23, 26, 0.08), 0 24px 64px rgba(21, 23, 26, 0.20)"
+  },
+  "gradients": {
+    "atmosphere": "radial-gradient(60% 55% at 0% 0%, #E2EBFC 0%, transparent 100%), radial-gradient(55% 50% at 100% 0%, #FCEEE2 0%, transparent 100%)",
+    "stage": "linear-gradient(115deg, #FFFFFF 40%, #E2EBFC 100%)"
+  },
+  "materials": {
+    "glass": {
+      "background": "rgba(255, 255, 255, 0.78)",
+      "backdropFilter": "blur(24px) saturate(160%)"
+    }
+  },
+  "motion": {
+    "snap": {
+      "type": "spring",
+      "visualDuration": 0.18,
+      "bounce": 0.0,
+      "stiffness": 846.1595,
+      "damping": 58.1776,
+      "mass": 1,
+      "settleMs": 318
+    },
+    "move": {
+      "type": "spring",
+      "visualDuration": 0.32,
+      "bounce": 0.0,
+      "stiffness": 267.7302,
+      "damping": 32.7249,
+      "mass": 1,
+      "settleMs": 565
+    },
+    "arrive": {
+      "type": "spring",
+      "visualDuration": 0.38,
+      "bounce": 0.12,
+      "stiffness": 189.8585,
+      "damping": 24.2509,
+      "mass": 1,
+      "settleMs": 631
+    },
+    "settle": {
+      "type": "spring",
+      "visualDuration": 0.45,
+      "bounce": 0.18,
+      "stiffness": 135.3855,
+      "damping": 19.0823,
+      "mass": 1,
+      "settleMs": 742
+    },
+    "exit": {
+      "type": "spring",
+      "visualDuration": 0.22,
+      "bounce": 0.0,
+      "stiffness": 566.4374,
+      "damping": 47.5999,
+      "mass": 1,
+      "settleMs": 388
+    },
+    "color": {
+      "type": "tween",
+      "duration": 0.12,
+      "ease": "linear"
+    },
+    "hit": {
+      "type": "hold",
+      "duration": 0.08
+    },
+    "pulse": {
+      "type": "loop",
+      "duration": 1.6,
+      "scale": 1.25
+    },
+    "defer": {
+      "type": "threshold",
+      "duration": 0.3
+    },
+    "linger": {
+      "type": "threshold",
+      "duration": 0.4
+    },
+    "resist": {
+      "type": "elastic",
+      "factor": 0.08
+    },
+    "stagger": 0.03,
+    "stagger-max-items": 6
+  },
+  "components": {
+    "button-primary": {
+      "background": "#2456D6",
+      "color": "#FFFFFF",
+      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "9999px",
+      "height": "36px",
+      "padding": "0 16px"
+    },
+    "button-secondary": {
+      "background": "#FFFFFF",
+      "color": "#15171A",
+      "outline": "#D3D8E0",
+      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "9999px",
+      "height": "36px",
+      "padding": "0 16px"
+    },
+    "button-ghost": {
+      "background": "transparent",
+      "color": "#484D55",
+      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "9999px",
+      "height": "36px",
+      "padding": "0 12px"
+    },
+    "button-destructive": {
+      "background": "#BC3329",
+      "color": "#FFFFFF",
+      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "9999px",
+      "height": "36px",
+      "padding": "0 16px"
+    },
+    "input": {
+      "background": "#FFFFFF",
+      "color": "#15171A",
+      "outline": "#D3D8E0",
+      "font": "400 14px/1.6 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "12px",
+      "height": "40px",
+      "padding": "0 12px"
+    },
+    "nav-item": {
+      "background": "transparent",
+      "color": "#5E636B",
+      "radius": "12px",
+      "size": "44px"
+    },
+    "nav-item-current": {
+      "background": "#E3EBFD",
+      "color": "#173B8F",
+      "radius": "12px",
+      "size": "44px"
+    },
+    "panel": {
+      "background": "#FFFFFF",
+      "radius": "24px",
+      "padding": "24px"
+    },
+    "object-surface": {
+      "background": "#F3F5F8",
+      "radius": "16px",
+      "padding": "16px"
+    },
+    "stage-field": {
+      "background": "#FFFFFF",
+      "radius": "24px",
+      "padding": "32px"
+    },
+    "status-mark": {
+      "size": "8px",
+      "radius": "9999px"
+    },
+    "status-chip": {
+      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "9999px",
+      "height": "24px",
+      "padding": "0 8px"
+    },
+    "progress-track": {
+      "background": "#E4E8EE",
+      "radius": "9999px",
+      "height": "4px"
+    },
+    "tooltip": {
+      "background": "#15171A",
+      "color": "#FFFFFF",
+      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "radius": "8px",
+      "padding": "6px 8px"
+    }
+  }
+}

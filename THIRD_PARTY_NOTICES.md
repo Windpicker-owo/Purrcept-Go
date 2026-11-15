@@ -9,6 +9,15 @@
 
 ## 一、复制或改写进源码的代码
 
+### Purrcept 当前扫码依赖
+
+Purrcept 原生源集通过 Maven 引入 ZXing Android Embedded 4.3.0
+（https://github.com/journeyapps/zxing-android-embedded）及 ZXing Core 3.4.1
+（https://github.com/zxing/zxing），用于本机相机扫码，不依赖外部扫码服务。
+两者采用 Apache-2.0；相关许可与 ZXing NOTICE 随 APK 打包在
+`app/assets/purrcept/qr_licenses.txt`，可在当前「设备 › 开源许可」中阅读。
+电脑二维码工具的 qrcode 8.2 由 uv 安装，不复制进源码或 APK。
+
 ### Phase（MIT，作者授权）
 
 | 项 | 内容 |

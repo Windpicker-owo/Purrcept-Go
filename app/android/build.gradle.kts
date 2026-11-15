@@ -1,13 +1,8 @@
 allprojects {
     repositories {
-        if (System.getenv("DSH_MAVEN_MIRRORS") != "0") {
-            maven { url = uri("https://maven.aliyun.com/repository/google") }
-            maven { url = uri("https://maven.aliyun.com/repository/central") }
-        }
         google()
-        mavenCentral()
-        // libadb-android (不打扰模式 self-ADB path) is published on JitPack only.
-        maven { url = uri("https://jitpack.io") }
+        // Maven Central's repo1 endpoint is reachable through the development proxy as well.
+        maven { url = uri("https://repo1.maven.org/maven2") }
     }
 }
 

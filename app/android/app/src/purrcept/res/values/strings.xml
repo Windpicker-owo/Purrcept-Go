@@ -1,0 +1,9 @@
+<resources>
+    <string name="scan_invitation_prompt">Scan the pairing QR code displayed on your Purrcept computer</string>
+    <string name="accessibility_description">Allow your paired Purrcept Engine to read and operate the screen only while device control is enabled. Stop control at any time in Purrcept Go.</string>
+    <string name="online_channel">Device connection</string>
+    <string name="online_title">Purrcept device is online</string>
+    <string name="online_text">Your Engine connection is active. Tap to open the app.</string>
+    <string name="stop">Disconnect</string>
+    <string name="message_channel">Messages</string>
+</resources>
