@@ -1,5 +1,7 @@
-/// One live status surface joins a subject's public identity, explicit stage and current action.
+/// One live status surface joins a subject's public identity, explicit stage and peeking mascot banner.
 library;
+
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
@@ -31,7 +33,6 @@ String activityLabel(SubjectExperience experience, PhoneL10n text) =>
 /// One namespace classification supports live verbs and historical action names.
 enum _ActionKind { phone, computer, notebook, browser, message, other }
 
-// Message and browser paths are nested under device namespaces and must be selected first.
 _ActionKind _actionKind(String? path) => switch (path) {
   'me.phone.chat.send' => _ActionKind.message,
   final String value when value.contains('.browser.') => _ActionKind.browser,
@@ -103,21 +104,104 @@ String messageLabel(MessagePhase phase, PhoneL10n text) => switch (phase) {
   MessagePhase.unavailable => text.messageProgressUnavailable,
 };
 
-/// A single expressive body anchors either an empty conversation or the live conversation header.
-class CompanionPresence extends StatelessWidget {
+/// A single expressive body anchors either an empty conversation or the peeking stage banner above composer.
+/// Static when idle/ready or under reduced motion; state-reactive cel color drift when actively working.
+class CompanionPresence extends StatefulWidget {
   const CompanionPresence({
     super.key,
     required this.experience,
     this.hero = false,
+    this.footer,
   });
   final SubjectExperience experience;
   final bool hero;
+  final Widget? footer;
+
+  @override
+  State<CompanionPresence> createState() => _CompanionPresenceState();
+}
+
+class _CompanionPresenceState extends State<CompanionPresence>
+    with SingleTickerProviderStateMixin {
+  late final wave = AnimationController(
+    vsync: this,
+    duration: MobileTokens.workingPulse,
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncWave();
+  }
+
+  @override
+  void didUpdateWidget(CompanionPresence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.experience.phase != widget.experience.phase) _syncWave();
+  }
+
+  void _syncWave() {
+    wave.stop();
+    wave.value = 0;
+    if (MediaQuery.disableAnimationsOf(context) ||
+        !TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    if (widget.experience.working) {
+      wave.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    wave.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openDetails(BuildContext context) {
+    final text = PhoneL10n.of(context);
+    final colors = PhoneColors.of(context);
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(Cel.space * 1.5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text.activityDetails,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: Cel.space),
+                Text(activityDetail(widget.experience.phase, text)),
+                const SizedBox(height: Cel.space),
+                Text(text.statusNotReply),
+                if (widget.experience.callPath != null) ...[
+                  const SizedBox(height: Cel.space),
+                  SelectableText(
+                    widget.experience.callPath!,
+                    style: TextStyle(color: colors.muted),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final text = PhoneL10n.of(context);
     final colors = PhoneColors.of(context);
-    final statusColor = switch (experience.phase) {
+    final phase = widget.experience.phase;
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    final statusColor = switch (phase) {
       CompanionPhase.failed => colors.failed,
       CompanionPhase.receiving => colors.waiting,
       CompanionPhase.ready => colors.ink,
@@ -127,11 +211,12 @@ class CompanionPresence extends StatelessWidget {
       _ => colors.muted,
     };
     final expandedCopy =
-        hero ||
+        widget.hero ||
         MediaQuery.textScalerOf(context).scale(MobileTokens.bodySize) <=
-            MobileTokens.bodySize * 1.4;
+            MobileTokens.bodySize * 1.35;
+
     final words = Column(
-      crossAxisAlignment: hero
+      crossAxisAlignment: widget.hero
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -139,96 +224,271 @@ class CompanionPresence extends StatelessWidget {
         Semantics(
           liveRegion: true,
           child: Text(
-            activityLabel(experience, text),
-            textAlign: hero ? TextAlign.center : TextAlign.start,
+            activityLabel(widget.experience, text),
+            textAlign: widget.hero ? TextAlign.center : TextAlign.start,
             style:
-                (hero
+                (widget.hero
                         ? Theme.of(context).textTheme.headlineMedium
                         : Theme.of(context).textTheme.titleMedium)
-                    ?.copyWith(color: statusColor, fontWeight: FontWeight.w600),
+                    ?.copyWith(color: statusColor, fontWeight: FontWeight.w700),
           ),
         ),
         if (expandedCopy) ...[
-          const SizedBox(height: Cel.space / 2),
+          const SizedBox(height: 3),
           Text(
-            activityDetail(experience.phase, text),
-            textAlign: hero ? TextAlign.center : TextAlign.start,
+            activityDetail(phase, text),
+            textAlign: widget.hero ? TextAlign.center : TextAlign.start,
+            maxLines: widget.hero ? 4 : 2,
+            overflow: widget.hero ? TextOverflow.visible : TextOverflow.ellipsis,
             style: TextStyle(
               color: colors.muted,
               fontSize: MobileTokens.labelSize,
-              height: MobileTokens.lineHeight,
+              height: 1.38,
             ),
           ),
         ],
       ],
     );
-    return Material(
-      color: hero ? colors.hero : colors.surface,
-      borderRadius: BorderRadius.circular(MobileTokens.panelRadius),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => showModalBottomSheet<void>(
-          context: context,
-          showDragHandle: true,
-          builder: (context) => SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(Cel.space * 1.5),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      text.activityDetails,
-                      style: Theme.of(context).textTheme.headlineMedium,
+
+    if (widget.hero) {
+      return Container(
+        decoration: colors.celCard(
+          radius: MobileTokens.heroRadius,
+          border: colors.ink,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: wave,
+                  builder: (context, _) => CustomPaint(
+                    painter: _BannerBackdropPainter(
+                      phase: phase,
+                      progress: reduced ? 0 : wave.value,
+                      dark: colors.dark,
                     ),
-                    const SizedBox(height: Cel.space),
-                    Text(activityDetail(experience.phase, text)),
-                    const SizedBox(height: Cel.space),
-                    Text(text.statusNotReply),
-                    if (experience.callPath != null) ...[
-                      const SizedBox(height: Cel.space),
-                      SelectableText(
-                        experience.callPath!,
-                        style: TextStyle(color: colors.muted),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
+              ),
+            ),
+            Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: () => _openDetails(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(Cel.space * 1.25),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CompanionMascot(phase: phase, hero: true),
+                      const SizedBox(height: Cel.spaceSm),
+                      words,
+                      if (widget.footer != null) ...[
+                        const SizedBox(height: Cel.space),
+                        widget.footer!,
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Compact peeking mascot stage banner: lower chin tucked behind opaque foreground banner ledge!
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.bottomRight,
+      children: [
+        // Peeking mascot behind banner's top right edge (cheek-level horizon)
+        Positioned(
+          right: 16,
+          top: 0,
+          child: IgnorePointer(
+            child: ClipRect(
+              child: Align(
+                alignment: Alignment.topCenter,
+                heightFactor: 0.76,
+                child: CompanionMascot(phase: phase),
               ),
             ),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(Cel.space),
-          child: hero
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CompanionMascot(phase: experience.phase, hero: true),
-                    const SizedBox(height: Cel.space),
-                    words,
-                  ],
-                )
-              : Row(
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.hero,
-                        borderRadius: BorderRadius.circular(
-                          MobileTokens.bubbleRadius,
+        Padding(
+          padding: const EdgeInsets.only(top: 26),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colors.ink, width: 1.6),
+              boxShadow: [
+                BoxShadow(
+                  color: phase == CompanionPhase.thinking
+                      ? colors.celShadowPaper
+                      : colors.celShadow,
+                  offset: const Offset(2, 3),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: wave,
+                      builder: (context, _) => CustomPaint(
+                        painter: _BannerBackdropPainter(
+                          phase: phase,
+                          progress: reduced ? 0 : wave.value,
+                          dark: colors.dark,
                         ),
                       ),
-                      child: CompanionMascot(phase: experience.phase),
                     ),
-                    const SizedBox(width: Cel.space),
-                    Expanded(child: words),
-                  ],
+                  ),
                 ),
+                Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    onTap: () => _openDetails(context),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 9, 78, 9),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(child: words),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
+}
+
+class _BannerBackdropPainter extends CustomPainter {
+  const _BannerBackdropPainter({
+    required this.phase,
+    required this.progress,
+    required this.dark,
+  });
+
+  final CompanionPhase phase;
+  final double progress;
+  final bool dark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (phase == CompanionPhase.thinking) {
+      // Sky × Warm Sakura-Peach dual-tone breathing tide
+      final shift = math.sin(progress * math.pi * 2) * size.width * 0.14;
+      final skyPaint = Paint()
+        ..color = (dark ? MobileTokens.darkHero : Cel.brandContainer)
+            .withValues(alpha: dark ? 0.55 : 0.72);
+      final peachPaint = Paint()
+        ..color = (dark ? MobileTokens.darkBlushContainer : Cel.blushContainer)
+            .withValues(alpha: dark ? 0.55 : 0.78);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.28 + shift, size.height * 0.5),
+          width: size.width * 0.72,
+          height: size.height * 2.2,
+        ),
+        skyPaint,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.76 - shift, size.height * 0.5),
+          width: size.width * 0.68,
+          height: size.height * 2.2,
+        ),
+        peachPaint,
+      );
+      return;
+    }
+
+    if (phase == CompanionPhase.acting || phase == CompanionPhase.processing) {
+      // Crisp cyan cel stream sweep
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()
+          ..color = (dark ? MobileTokens.darkActiveContainer : Cel.activeContainer)
+              .withValues(alpha: dark ? 0.48 : 0.68),
+      );
+      final sweepX = -size.width * 0.4 + (size.width * 1.65) * progress;
+      final ribbon = Path()
+        ..moveTo(sweepX, 0)
+        ..lineTo(sweepX + size.width * 0.34, 0)
+        ..lineTo(sweepX + size.width * 0.24, size.height)
+        ..lineTo(sweepX - size.width * 0.1, size.height)
+        ..close();
+      canvas.drawPath(
+        ribbon,
+        Paint()
+          ..color = (dark ? MobileTokens.darkHero : Cel.brandContainer)
+              .withValues(alpha: dark ? 0.6 : 0.85),
+      );
+      return;
+    }
+
+    if (phase == CompanionPhase.receiving) {
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()
+          ..color = (dark ? MobileTokens.darkTapeContainer : Cel.waitingContainer)
+              .withValues(alpha: 0.65),
+      );
+      return;
+    }
+
+    if (phase == CompanionPhase.failed) {
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()
+          ..color = (dark ? MobileTokens.darkBlushContainer : Cel.failedContainer)
+              .withValues(alpha: 0.72),
+      );
+      return;
+    }
+
+    // Quiet/Static ready & offline sash: zero animation
+    final sash = Path()
+      ..moveTo(size.width * 0.64, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(size.width * 0.52, size.height)
+      ..close();
+    canvas.drawPath(
+      sash,
+      Paint()
+        ..color = (dark ? MobileTokens.darkHero : Cel.atmosphereSky)
+            .withValues(alpha: dark ? 0.42 : 0.72),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BannerBackdropPainter oldDelegate) =>
+      oldDelegate.phase != phase ||
+      oldDelegate.progress != progress ||
+      oldDelegate.dark != dark;
 }
 
 /// Entry motion is interruptible and physical. History rows do not all animate on every refresh.

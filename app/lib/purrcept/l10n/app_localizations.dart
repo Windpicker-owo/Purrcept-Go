@@ -1020,6 +1020,324 @@ abstract class PhoneL10n {
   /// In en, this message translates to:
   /// **'Copy connection error details'**
   String get copyConnectionError;
+
+  /// No description provided for @avatarStudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatars & Social Profile'**
+  String get avatarStudioTitle;
+
+  /// No description provided for @avatarStudioSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize chat avatars, Cel presets, and your display name'**
+  String get avatarStudioSubtitle;
+
+  /// No description provided for @companionAvatarTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Companion'**
+  String get companionAvatarTab;
+
+  /// No description provided for @userAvatarTab.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get userAvatarTab;
+
+  /// No description provided for @pickAlbumAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose photo from album'**
+  String get pickAlbumAvatar;
+
+  /// No description provided for @resetDefaultAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get resetDefaultAvatar;
+
+  /// No description provided for @presetAvatarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cel Academy Presets'**
+  String get presetAvatarsTitle;
+
+  /// No description provided for @userNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'My display name'**
+  String get userNicknameLabel;
+
+  /// No description provided for @userNicknameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to show “You”'**
+  String get userNicknameHint;
+
+  /// No description provided for @saveProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save profile'**
+  String get saveProfile;
+
+  /// No description provided for @stickerButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Stickers'**
+  String get stickerButton;
+
+  /// No description provided for @imageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send photo'**
+  String get imageButton;
+
+  /// No description provided for @voiceModeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input'**
+  String get voiceModeButton;
+
+  /// No description provided for @keyboardModeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard input'**
+  String get keyboardModeButton;
+
+  /// No description provided for @holdToTalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to talk'**
+  String get holdToTalk;
+
+  /// No description provided for @releaseToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to send'**
+  String get releaseToSend;
+
+  /// No description provided for @slideUpToCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide up to cancel'**
+  String get slideUpToCancel;
+
+  /// No description provided for @releaseToCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to cancel'**
+  String get releaseToCancel;
+
+  /// No description provided for @tapToRecordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to record · or tap to start/stop'**
+  String get tapToRecordHint;
+
+  /// No description provided for @voiceTooShortError.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording was too short. Hold a bit longer to send.'**
+  String get voiceTooShortError;
+
+  /// No description provided for @micPermissionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission is needed to send voice messages.'**
+  String get micPermissionError;
+
+  /// No description provided for @micUnavailableError.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone is currently unavailable.'**
+  String get micUnavailableError;
+
+  /// No description provided for @invalidMediaError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the selected image or media file.'**
+  String get invalidMediaError;
+
+  /// No description provided for @mediaPlaybackError.
+  ///
+  /// In en, this message translates to:
+  /// **'This voice clip cannot be played locally.'**
+  String get mediaPlaybackError;
+
+  /// No description provided for @mediaUploadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The attachment could not be uploaded. Your message is saved on this phone; retry when the computer is available.'**
+  String get mediaUploadError;
+
+  /// No description provided for @mediaDownloadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The message is synced, but its attachment could not be downloaded. Retry when the computer is available.'**
+  String get mediaDownloadError;
+
+  /// No description provided for @retryMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry attachments'**
+  String get retryMedia;
+
+  /// No description provided for @stickerPackBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Companion Pack'**
+  String get stickerPackBuiltIn;
+
+  /// No description provided for @stickerPackCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'My favorites'**
+  String get stickerPackCustom;
+
+  /// No description provided for @addCustomSticker.
+  ///
+  /// In en, this message translates to:
+  /// **'Add sticker'**
+  String get addCustomSticker;
+
+  /// No description provided for @customStickerTagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Label this sticker'**
+  String get customStickerTagTitle;
+
+  /// No description provided for @customStickerTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Happy, Pat pat, Got it'**
+  String get customStickerTagHint;
+
+  /// No description provided for @deleteSticker.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from my favorites'**
+  String get deleteSticker;
+
+  /// No description provided for @noCustomStickers.
+  ///
+  /// In en, this message translates to:
+  /// **'Save images you like, or add a sticker from your gallery. Favorites stay on this phone and can be added offline.'**
+  String get noCustomStickers;
+
+  /// No description provided for @replyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get replyAction;
+
+  /// No description provided for @copyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy text'**
+  String get copyAction;
+
+  /// No description provided for @copiedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copiedToast;
+
+  /// No description provided for @saveAsStickerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as sticker'**
+  String get saveAsStickerAction;
+
+  /// No description provided for @savedStickerToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to my sticker favorites'**
+  String get savedStickerToast;
+
+  /// No description provided for @cancelReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reply'**
+  String get cancelReply;
+
+  /// No description provided for @replyingTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String replyingTo(String name);
+
+  /// No description provided for @voiceMessageTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice message'**
+  String get voiceMessageTag;
+
+  /// No description provided for @imageMessageTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get imageMessageTag;
+
+  /// No description provided for @stickerMessageTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticker'**
+  String get stickerMessageTag;
+
+  /// No description provided for @playVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Play voice'**
+  String get playVoice;
+
+  /// No description provided for @stopVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop playback'**
+  String get stopVoice;
+
+  /// No description provided for @quickIcebreakerPat.
+  ///
+  /// In en, this message translates to:
+  /// **'Pat pat'**
+  String get quickIcebreakerPat;
+
+  /// No description provided for @quickIcebreakerPeek.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you up to today?'**
+  String get quickIcebreakerPeek;
+
+  /// No description provided for @quickIcebreakerTea.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s take a tea break'**
+  String get quickIcebreakerTea;
+
+  /// No description provided for @profileCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatars & Social Profile'**
+  String get profileCardTitle;
+
+  /// No description provided for @connectionCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine Connection'**
+  String get connectionCardTitle;
+
+  /// No description provided for @controlCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen & Device Control'**
+  String get controlCardTitle;
+
+  /// No description provided for @deleteLocalStickerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes this phone\'s favorite only. The Bot\'s sticker library and images in past chats are unchanged.'**
+  String get deleteLocalStickerDescription;
 }
 
 class _PhoneL10nDelegate extends LocalizationsDelegate<PhoneL10n> {

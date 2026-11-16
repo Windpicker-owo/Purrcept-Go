@@ -31,6 +31,7 @@ void main() {
 
   for (final mode in [
     'thinking-light',
+    'personal-stickers',
     'acting-dark',
     'large-type',
     'offline',
@@ -129,6 +130,16 @@ void main() {
             ? findsNothing
             : findsOneWidget,
       );
+      if (mode == 'personal-stickers') {
+        await tester.tap(find.byTooltip('表情贴纸'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('我的收藏 (0)'));
+        await tester.pumpAndSettle();
+        final composer = find.byKey(const ValueKey('chat-composer'));
+        expect(tester.getSize(composer).width, greaterThan(280));
+        expect(tester.getSize(composer).height, lessThan(80));
+        expect(tester.takeException(), isNull);
+      }
       final boundary = tester.renderObject<RenderRepaintBoundary>(
         find.byKey(key),
       );

@@ -1,82 +1,101 @@
 {
   "name": "Purrcept Cel",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "colors": {
-    "canvas": "#F2F4F7",
-    "atmosphere-sky": "#E2EBFC",
-    "atmosphere-peach": "#FCEEE2",
+    "canvas": "#F4F8FD",
+    "atmosphere-sky": "#E3F0FF",
+    "atmosphere-peach": "#FFEFE8",
     "surface": "#FFFFFF",
-    "surface-sunken": "#F3F5F8",
-    "surface-selected": "#E8ECF2",
-    "glass": "rgba(255, 255, 255, 0.78)",
-    "ink": "#15171A",
-    "ink-secondary": "#484D55",
-    "ink-muted": "#5E636B",
-    "ink-disabled": "#A3A7AD",
+    "surface-sunken": "#ECF3FA",
+    "surface-selected": "#DCEBFF",
+    "paper": "#FFFDF8",
+    "paper-sunken": "#F7F1E6",
+    "paper-blush": "#FFF0EC",
+    "glass": "rgba(255, 255, 255, 0.88)",
+    "ink": "#182232",
+    "ink-secondary": "#3D4B63",
+    "ink-muted": "#53627A",
+    "ink-warm": "#5C4B43",
+    "ink-disabled": "#9BA8BC",
     "on-ink": "#FFFFFF",
-    "outline": "#D3D8E0",
-    "outline-subtle": "#E4E8EE",
-    "focus-ring": "#2456D6",
-    "scrim": "rgba(21, 23, 26, 0.32)",
-    "brand": "#2456D6",
-    "brand-hover": "#1C47B8",
-    "brand-pressed": "#163A99",
+    "outline": "#C5D4E8",
+    "outline-subtle": "#DFE9F5",
+    "outline-paper": "#E6D9C8",
+    "focus-ring": "#0B5ED7",
+    "scrim": "rgba(24, 34, 50, 0.36)",
+    "cel-shadow-sky": "#C7DDF8",
+    "cel-shadow-paper": "#E6D7C3",
+    "brand": "#0B5ED7",
+    "brand-fill": "#1A73E8",
+    "brand-hover": "#1562C9",
+    "brand-pressed": "#0E4FA8",
+    "brand-signal": "#29A8FF",
     "on-brand": "#FFFFFF",
-    "brand-container": "#E3EBFD",
-    "on-brand-container": "#173B8F",
-    "active": "#0A7480",
-    "active-container": "#DDF2F4",
-    "on-active-container": "#06525B",
-    "success": "#127236",
-    "success-container": "#E4F3E9",
-    "on-success-container": "#0F5A2B",
-    "waiting": "#9C5000",
-    "waiting-signal": "#F2A11F",
-    "waiting-container": "#FDF0DA",
-    "on-waiting-container": "#6B3800",
-    "failed": "#BC3329",
-    "failed-hover": "#A32B22",
-    "failed-pressed": "#8A1F17",
-    "failed-container": "#FBE8E5",
-    "on-failed-container": "#8A1F17",
-    "paused": "#6D4BC9",
-    "paused-container": "#EEE9FB",
-    "on-paused-container": "#3F2490",
+    "brand-container": "#DCEBFF",
+    "on-brand-container": "#0A439C",
+    "blush-signal": "#FF8A7A",
+    "blush-container": "#FFE6E0",
+    "on-blush-container": "#8C2D19",
+    "tape-signal": "#F5B547",
+    "tape-container": "#FDECC8",
+    "on-tape-container": "#6E4200",
+    "active": "#086A78",
+    "active-signal": "#12B5CB",
+    "active-container": "#D6F4F7",
+    "on-active-container": "#064E59",
+    "success": "#116E3A",
+    "success-signal": "#22C55E",
+    "success-container": "#DEF5E7",
+    "on-success-container": "#0D542B",
+    "waiting": "#944B00",
+    "waiting-signal": "#F59E0B",
+    "waiting-container": "#FDEFD6",
+    "on-waiting-container": "#693500",
+    "failed": "#BA2D25",
+    "failed-signal": "#F43F5E",
+    "failed-hover": "#9E241D",
+    "failed-pressed": "#851D17",
+    "failed-container": "#FCE6E4",
+    "on-failed-container": "#851D17",
+    "paused": "#6842C2",
+    "paused-signal": "#8B5CF6",
+    "paused-container": "#EDE7FC",
+    "on-paused-container": "#3E218A",
     "mascot-fur": "#FFFDF9",
-    "mascot-fur-shade": "#E9E2D8",
-    "mascot-blush": "#F3BDB3"
+    "mascot-fur-shade": "#EAE0D5",
+    "mascot-blush": "#FFB5AA"
   },
   "typography": {
     "display": {
-      "font": "700 48px/1.08 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontSize": "48px",
+      "font": "700 44px/1.12 \"Resource Han Rounded CN\", \"M PLUS Rounded 1c\", \"MiSans\", \"HarmonyOS Sans SC\", sans-serif",
+      "fontFamily": "\"Resource Han Rounded CN\", \"M PLUS Rounded 1c\", \"MiSans\", \"HarmonyOS Sans SC\", sans-serif",
+      "fontSize": "44px",
       "fontWeight": 700,
-      "lineHeight": 1.08,
-      "letterSpacing": "-0.025em",
+      "lineHeight": 1.12,
+      "letterSpacing": "-0.02em",
       "fontFeature": null
     },
     "headline": {
-      "font": "700 28px/1.25 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontSize": "28px",
+      "font": "700 26px/1.25 \"Resource Han Rounded CN\", \"M PLUS Rounded 1c\", \"MiSans\", \"HarmonyOS Sans SC\", sans-serif",
+      "fontFamily": "\"Resource Han Rounded CN\", \"M PLUS Rounded 1c\", \"MiSans\", \"HarmonyOS Sans SC\", sans-serif",
+      "fontSize": "26px",
       "fontWeight": 700,
       "lineHeight": 1.25,
-      "letterSpacing": "-0.015em",
+      "letterSpacing": "-0.01em",
       "fontFeature": null
     },
     "title": {
-      "font": "600 17px/1.45 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "700 17px/1.45 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontFamily": "\"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "fontSize": "17px",
-      "fontWeight": 600,
+      "fontWeight": 700,
       "lineHeight": 1.45,
       "letterSpacing": null,
       "fontFeature": null
     },
     "body": {
-      "font": "400 14px/1.6 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "400 14px/1.6 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontFamily": "\"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "fontSize": "14px",
       "fontWeight": 400,
       "lineHeight": 1.6,
@@ -84,38 +103,47 @@
       "fontFeature": null
     },
     "body-long": {
-      "font": "400 16px/1.7 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontSize": "16px",
+      "font": "400 15px/1.65 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontFamily": "\"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontSize": "15px",
       "fontWeight": 400,
-      "lineHeight": 1.7,
-      "letterSpacing": null,
+      "lineHeight": 1.65,
+      "letterSpacing": "0.01em",
       "fontFeature": null
     },
     "label": {
-      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "600 13px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontFamily": "\"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "fontSize": "13px",
       "fontWeight": 600,
       "lineHeight": 1.4,
-      "letterSpacing": null,
+      "letterSpacing": "0.01em",
       "fontFeature": null
     },
     "caption": {
-      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "500 12px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "fontFamily": "\"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "fontSize": "12px",
       "fontWeight": 500,
       "lineHeight": 1.4,
-      "letterSpacing": null,
+      "letterSpacing": "0.01em",
       "fontFeature": null
     },
+    "hud": {
+      "font": "600 12px/1.2 \"JetBrains Mono\", \"Geist Mono\", \"SFMono-Regular\", Consolas, monospace",
+      "fontFamily": "\"JetBrains Mono\", \"Geist Mono\", \"SFMono-Regular\", Consolas, monospace",
+      "fontSize": "12px",
+      "fontWeight": 600,
+      "lineHeight": 1.2,
+      "letterSpacing": "0.06em",
+      "fontFeature": "\"tnum\" 1, \"zero\" 1"
+    },
     "mono": {
-      "font": "500 13px/1.5 ui-monospace, \"SFMono-Regular\", Consolas, \"Microsoft YaHei\", \"PingFang SC\", monospace",
-      "fontFamily": "ui-monospace, \"SFMono-Regular\", Consolas, \"Microsoft YaHei\", \"PingFang SC\", monospace",
+      "font": "500 13px/1.55 \"JetBrains Mono\", \"Geist Mono\", \"SFMono-Regular\", Consolas, monospace",
+      "fontFamily": "\"JetBrains Mono\", \"Geist Mono\", \"SFMono-Regular\", Consolas, monospace",
       "fontSize": "13px",
       "fontWeight": 500,
-      "lineHeight": 1.5,
+      "lineHeight": 1.55,
       "letterSpacing": null,
       "fontFeature": "\"tnum\" 1, \"zero\" 1"
     }
@@ -123,10 +151,10 @@
   "rounded": {
     "none": "0px",
     "xs": "6px",
-    "sm": "8px",
-    "md": "12px",
-    "lg": "16px",
-    "xl": "24px",
+    "sm": "10px",
+    "md": "14px",
+    "lg": "20px",
+    "xl": "28px",
     "full": "9999px"
   },
   "spacing": {
@@ -142,9 +170,9 @@
     "4xl": "96px",
     "gutter": "32px",
     "gutter-narrow": "16px",
-    "island-gap": "12px",
-    "sidebar": "72px",
-    "inspector": "360px",
+    "island-gap": "14px",
+    "sidebar": "76px",
+    "inspector": "368px",
     "content-max": "1600px",
     "touch-target": "44px"
   },
@@ -154,73 +182,80 @@
     "workspace": "960px"
   },
   "elevation": {
-    "control": "0 1px 2px rgba(21, 23, 26, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.22)",
-    "control-surface": "0 1px 2px rgba(21, 23, 26, 0.06)",
-    "well": "inset 0 1px 2px rgba(21, 23, 26, 0.06)",
-    "panel": "0 1px 2px rgba(21, 23, 26, 0.04), 0 8px 24px rgba(21, 23, 26, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
-    "lifted": "0 2px 4px rgba(21, 23, 26, 0.05), 0 12px 32px rgba(21, 23, 26, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
-    "overlay": "0 2px 6px rgba(21, 23, 26, 0.06), 0 16px 40px rgba(21, 23, 26, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7)",
-    "dialog": "0 4px 12px rgba(21, 23, 26, 0.08), 0 24px 64px rgba(21, 23, 26, 0.20)"
+    "well": "inset 0 2px 0 rgba(24, 34, 50, 0.05)",
+    "control": "0 3px 0 0 #0E4FA8",
+    "control-pressed": "0 1px 0 0 #0E4FA8",
+    "control-surface": "0 3px 0 0 #C7DDF8",
+    "control-surface-pressed": "0 1px 0 0 #C7DDF8",
+    "destructive": "0 3px 0 0 #851D17",
+    "destructive-pressed": "0 1px 0 0 #851D17",
+    "panel": "3px 4px 0 0 #C7DDF8",
+    "notebook": "3px 4px 0 0 #E6D7C3",
+    "sticker": "3px 3px 0 0 #182232",
+    "lifted": "4px 6px 0 0 #C7DDF8",
+    "overlay": "6px 8px 0 0 rgba(24, 34, 50, 0.14)",
+    "dialog": "8px 10px 0 0 rgba(24, 34, 50, 0.22)"
   },
   "gradients": {
-    "atmosphere": "radial-gradient(60% 55% at 0% 0%, #E2EBFC 0%, transparent 100%), radial-gradient(55% 50% at 100% 0%, #FCEEE2 0%, transparent 100%)",
-    "stage": "linear-gradient(115deg, #FFFFFF 40%, #E2EBFC 100%)"
+    "atmosphere": "radial-gradient(58% 52% at 0% 0%, #E3F0FF 0%, transparent 100%), radial-gradient(52% 48% at 100% 0%, #FFEFE8 0%, transparent 100%)",
+    "stage": "linear-gradient(118deg, #FFFFFF 42%, #E3F0FF 100%)",
+    "notebook-header": "linear-gradient(180deg, #FFF0EC 0%, #FFFDF8 100%)"
   },
   "materials": {
     "glass": {
-      "background": "rgba(255, 255, 255, 0.78)",
-      "backdropFilter": "blur(24px) saturate(160%)"
+      "background": "rgba(255, 255, 255, 0.88)",
+      "backdropFilter": "blur(16px) saturate(140%)"
     }
   },
   "motion": {
     "snap": {
       "type": "spring",
       "visualDuration": 0.18,
-      "bounce": 0.0,
+      "bounce": 0.06,
       "stiffness": 846.1595,
-      "damping": 58.1776,
+      "damping": 54.687,
       "mass": 1,
-      "settleMs": 318
+      "settleMs": 250
     },
     "move": {
       "type": "spring",
-      "visualDuration": 0.32,
-      "bounce": 0.0,
-      "stiffness": 267.7302,
-      "damping": 32.7249,
+      "visualDuration": 0.3,
+      "bounce": 0.04,
+      "stiffness": 304.6174,
+      "damping": 33.5103,
       "mass": 1,
-      "settleMs": 565
+      "settleMs": 457
     },
     "arrive": {
       "type": "spring",
-      "visualDuration": 0.38,
-      "bounce": 0.12,
-      "stiffness": 189.8585,
-      "damping": 24.2509,
+      "visualDuration": 0.36,
+      "bounce": 0.14,
+      "stiffness": 211.5399,
+      "damping": 25.0164,
       "mass": 1,
-      "settleMs": 631
+      "settleMs": 603
     },
     "settle": {
       "type": "spring",
-      "visualDuration": 0.45,
+      "visualDuration": 0.44,
       "bounce": 0.18,
-      "stiffness": 135.3855,
-      "damping": 19.0823,
+      "stiffness": 141.6093,
+      "damping": 19.516,
       "mass": 1,
-      "settleMs": 742
+      "settleMs": 725
     },
     "exit": {
       "type": "spring",
-      "visualDuration": 0.22,
+      "visualDuration": 0.2,
       "bounce": 0.0,
-      "stiffness": 566.4374,
-      "damping": 47.5999,
+      "stiffness": 685.3892,
+      "damping": 52.3599,
       "mass": 1,
-      "settleMs": 388
+      "settleMs": 353
     },
     "color": {
       "type": "tween",
-      "duration": 0.12,
+      "duration": 0.1,
       "ease": "linear"
     },
     "hit": {
@@ -249,72 +284,80 @@
   },
   "components": {
     "button-primary": {
-      "background": "#2456D6",
+      "background": "#1A73E8",
       "color": "#FFFFFF",
-      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "600 13px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "radius": "9999px",
-      "height": "36px",
-      "padding": "0 16px"
+      "height": "38px",
+      "padding": "0 18px"
     },
     "button-secondary": {
       "background": "#FFFFFF",
-      "color": "#15171A",
-      "outline": "#D3D8E0",
-      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "color": "#182232",
+      "outline": "#C5D4E8",
+      "font": "600 13px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "radius": "9999px",
-      "height": "36px",
-      "padding": "0 16px"
+      "height": "38px",
+      "padding": "0 18px"
     },
     "button-ghost": {
       "background": "transparent",
-      "color": "#484D55",
-      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "color": "#3D4B63",
+      "font": "600 13px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "radius": "9999px",
-      "height": "36px",
+      "height": "38px",
       "padding": "0 12px"
     },
     "button-destructive": {
-      "background": "#BC3329",
+      "background": "#BA2D25",
       "color": "#FFFFFF",
-      "font": "600 13px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "600 13px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "radius": "9999px",
-      "height": "36px",
-      "padding": "0 16px"
+      "height": "38px",
+      "padding": "0 18px"
     },
     "input": {
       "background": "#FFFFFF",
-      "color": "#15171A",
-      "outline": "#D3D8E0",
-      "font": "400 14px/1.6 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "radius": "12px",
-      "height": "40px",
-      "padding": "0 12px"
+      "color": "#182232",
+      "outline": "#C5D4E8",
+      "font": "400 14px/1.6 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "radius": "14px",
+      "height": "42px",
+      "padding": "0 14px"
     },
     "nav-item": {
       "background": "transparent",
-      "color": "#5E636B",
-      "radius": "12px",
-      "size": "44px"
+      "color": "#53627A",
+      "radius": "14px",
+      "size": "46px"
     },
     "nav-item-current": {
-      "background": "#E3EBFD",
-      "color": "#173B8F",
-      "radius": "12px",
-      "size": "44px"
+      "background": "#DCEBFF",
+      "color": "#0A439C",
+      "radius": "14px",
+      "size": "46px"
     },
     "panel": {
       "background": "#FFFFFF",
-      "radius": "24px",
+      "outline": "#DFE9F5",
+      "radius": "28px",
+      "padding": "24px"
+    },
+    "notebook-sheet": {
+      "background": "#FFFDF8",
+      "outline": "#E6D9C8",
+      "radius": "20px",
       "padding": "24px"
     },
     "object-surface": {
-      "background": "#F3F5F8",
-      "radius": "16px",
+      "background": "#ECF3FA",
+      "radius": "20px",
       "padding": "16px"
     },
     "stage-field": {
       "background": "#FFFFFF",
-      "radius": "24px",
+      "outline": "#C5D4E8",
+      "radius": "28px",
       "padding": "32px"
     },
     "status-mark": {
@@ -322,62 +365,78 @@
       "radius": "9999px"
     },
     "status-chip": {
-      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "font": "500 12px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
       "radius": "9999px",
-      "height": "24px",
-      "padding": "0 8px"
+      "height": "26px",
+      "padding": "0 10px"
     },
     "progress-track": {
-      "background": "#E4E8EE",
+      "background": "#DFE9F5",
       "radius": "9999px",
-      "height": "4px"
+      "height": "6px"
     },
     "tooltip": {
-      "background": "#15171A",
+      "background": "#182232",
       "color": "#FFFFFF",
-      "font": "500 12px/1.4 system-ui, -apple-system, \"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
-      "radius": "8px",
-      "padding": "6px 8px"
+      "font": "500 12px/1.4 \"MiSans\", \"HarmonyOS Sans SC\", \"Plus Jakarta Sans\", \"PingFang SC\", sans-serif",
+      "radius": "10px",
+      "padding": "6px 10px"
     }
   },
   "mobile": {
     "colors": {
-      "hero": "#E3EBFD",
-      "fur": "#FFFDF7",
-      "furShade": "#DBE3F1",
-      "blush": "#F6BDB5",
-      "darkCanvas": "#111925",
-      "darkSurface": "#1B2636",
-      "darkSunken": "#162130",
-      "darkInk": "#EDF2FC",
-      "darkMuted": "#B4BFD2",
-      "darkHero": "#243757",
-      "darkBrand": "#A8C2FF",
-      "darkActive": "#75D8D8",
-      "darkWaiting": "#F0C479",
-      "darkFailed": "#FFB3AB"
+      "hero": "#DCEBFF",
+      "fur": "#FFFDF9",
+      "furShade": "#EAE0D5",
+      "blush": "#FFB5AA",
+      "darkCanvas": "#0F1724",
+      "darkSurface": "#172234",
+      "darkSunken": "#131C2B",
+      "darkPaper": "#1D2634",
+      "darkInk": "#EDF3FC",
+      "darkMuted": "#9FB0C7",
+      "darkOutline": "#2B3D57",
+      "darkCelShadow": "#080D16",
+      "darkHero": "#213654",
+      "darkBrand": "#7DB4FF",
+      "darkActive": "#4DD4E6",
+      "darkWaiting": "#F7BC52",
+      "darkFailed": "#FF8E9E",
+      "darkBlushContainer": "#3D2328",
+      "darkTapeContainer": "#3A2E1B",
+      "darkActiveContainer": "#14353E",
+      "darkSuccessContainer": "#153626"
     },
     "metrics": {
       "panelRadius": 24,
       "bubbleRadius": 20,
-      "heroRadius": 32,
+      "bubbleSharpRadius": 6,
+      "heroRadius": 28,
       "avatarSize": 60,
-      "bodySize": 16,
-      "labelSize": 13,
-      "titleSize": 26,
-      "displaySize": 34,
-      "lineHeight": 1.45,
+      "chatAvatarSize": 40,
+      "headerAvatarSize": 42,
+      "stickerSize": 112,
+      "borderWidth": 1.5,
+      "inkBorderWidth": 2.0,
+      "celShadowDx": 2.5,
+      "celShadowDy": 3.5,
+      "bodySize": 15.5,
+      "labelSize": 12.5,
+      "titleSize": 22,
+      "displaySize": 32,
+      "lineHeight": 1.48,
       "contentMax": 680,
       "springMass": 1,
-      "springStiffness": 340,
-      "springDamping": 29,
-      "pressScale": 0.97
+      "springStiffness": 380,
+      "springDamping": 30,
+      "pressScale": 0.96
     },
     "durations": {
       "effects": 120,
+      "hit": 80,
       "blink": 180,
       "blinkInterval": 5200,
-      "workingPulse": 2400
+      "workingPulse": 2000
     }
   }
 }

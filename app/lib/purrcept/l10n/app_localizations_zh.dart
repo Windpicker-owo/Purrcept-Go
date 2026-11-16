@@ -488,4 +488,166 @@ class PhoneL10nZh extends PhoneL10n {
 
   @override
   String get copyConnectionError => '复制连接错误详情';
+
+  @override
+  String get avatarStudioTitle => '头像与社交名片';
+
+  @override
+  String get avatarStudioSubtitle => '自定义搭档与你的聊天头像、预设风格与显示昵称';
+
+  @override
+  String get companionAvatarTab => '搭档头像';
+
+  @override
+  String get userAvatarTab => '我的形象';
+
+  @override
+  String get pickAlbumAvatar => '从相册选择照片';
+
+  @override
+  String get resetDefaultAvatar => '恢复默认形象';
+
+  @override
+  String get presetAvatarsTitle => '清透学园 · 预设头像';
+
+  @override
+  String get userNicknameLabel => '我的聊天昵称';
+
+  @override
+  String get userNicknameHint => '留空则默认显示“你”';
+
+  @override
+  String get saveProfile => '保存设置';
+
+  @override
+  String get stickerButton => '表情贴纸';
+
+  @override
+  String get imageButton => '发送图片';
+
+  @override
+  String get voiceModeButton => '语音输入';
+
+  @override
+  String get keyboardModeButton => '键盘输入';
+
+  @override
+  String get holdToTalk => '按住 说话';
+
+  @override
+  String get releaseToSend => '松开 发送';
+
+  @override
+  String get slideUpToCancel => '上滑取消发送';
+
+  @override
+  String get releaseToCancel => '松开即可取消';
+
+  @override
+  String get tapToRecordHint => '按住录音 · 轻点也可开始或结束';
+
+  @override
+  String get voiceTooShortError => '说话时间太短啦，请再按住多说一句。';
+
+  @override
+  String get micPermissionError => '需要麦克风权限才能发送语音消息，请在系统弹窗或设置中允许录音。';
+
+  @override
+  String get micUnavailableError => '当前无法访问麦克风，请检查是否有其他应用占用录音。';
+
+  @override
+  String get invalidMediaError => '无法读取所选图片或媒体文件，请换一张重试。';
+
+  @override
+  String get mediaPlaybackError => '本地语音文件暂不可播放。';
+
+  @override
+  String get mediaUploadError => '附件上传未成功，消息已保存在手机。电脑可连接后可重试。';
+
+  @override
+  String get mediaDownloadError => '消息已同步，附件尚未下载成功。电脑可连接后可重试。';
+
+  @override
+  String get retryMedia => '重试附件传输';
+
+  @override
+  String get stickerPackBuiltIn => '陪伴表情';
+
+  @override
+  String get stickerPackCustom => '我的收藏';
+
+  @override
+  String get addCustomSticker => '添加表情';
+
+  @override
+  String get customStickerTagTitle => '给收藏表情起个名字';
+
+  @override
+  String get customStickerTagHint => '例如：开心、摸摸头、收到';
+
+  @override
+  String get deleteSticker => '从我的收藏移除';
+
+  @override
+  String get noCustomStickers => '收藏你喜欢的图片，或从相册添加表情。收藏保存在这台手机上，可离线添加。';
+
+  @override
+  String get replyAction => '引用回复';
+
+  @override
+  String get copyAction => '复制内容';
+
+  @override
+  String get copiedToast => '已复制到剪贴板';
+
+  @override
+  String get saveAsStickerAction => '收藏为表情';
+
+  @override
+  String get savedStickerToast => '已添加到我的表情收藏';
+
+  @override
+  String get cancelReply => '取消引用';
+
+  @override
+  String replyingTo(String name) {
+    return '回复 $name';
+  }
+
+  @override
+  String get voiceMessageTag => '语音消息';
+
+  @override
+  String get imageMessageTag => '图片';
+
+  @override
+  String get stickerMessageTag => '贴纸';
+
+  @override
+  String get playVoice => '播放语音';
+
+  @override
+  String get stopVoice => '停止播放';
+
+  @override
+  String get quickIcebreakerPat => '摸摸头';
+
+  @override
+  String get quickIcebreakerPeek => '今天在忙什么呀？';
+
+  @override
+  String get quickIcebreakerTea => '休息一下喝口茶吧';
+
+  @override
+  String get profileCardTitle => '头像与社交装扮';
+
+  @override
+  String get connectionCardTitle => 'Engine 连接与在线守护';
+
+  @override
+  String get controlCardTitle => '屏幕感知与远程操控';
+
+  @override
+  String get deleteLocalStickerDescription =>
+      '仅移除这台手机上的收藏，不影响 Bot 的贴纸库或历史聊天图片。';
 }

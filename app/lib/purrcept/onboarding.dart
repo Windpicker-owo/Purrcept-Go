@@ -1,5 +1,5 @@
 /// First-run education follows native pairing facts and durable progress, without granting permissions.
-/// The host owns camera review and pairing; this surface only requests explicit, reversible steps.
+/// Styled in Purrcept Cel v0.4 Clear Academy × Warm Notebook aesthetics.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,8 +9,8 @@ import 'experience.dart';
 import 'l10n/app_localizations.dart';
 import 'mascot.dart';
 import 'mobile_theme.dart';
-import 'tokens.dart';
 import 'press_feedback.dart';
+import 'tokens.dart';
 
 /// Paired users finish optional permission education; an existing pairing without progress skips it.
 class PhoneSetup extends StatelessWidget {
@@ -22,7 +22,6 @@ class PhoneSetup extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = PhoneL10n.of(context);
     final colors = PhoneColors.of(context);
-    // Credentials constrain navigation: a paired phone must never enter the scan page again.
     final step = device.paired ? 3 : device.setupStep.clamp(0, 2);
     final title = switch (step) {
       0 => text.setupWelcome,
@@ -43,7 +42,7 @@ class PhoneSetup extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(Cel.space * 1.5),
+                padding: const EdgeInsets.all(Cel.space * 1.25),
                 child: AnimatedSwitcher(
                   duration: MediaQuery.disableAnimationsOf(context)
                       ? Duration.zero
@@ -67,41 +66,42 @@ class PhoneSetup extends StatelessWidget {
                           Expanded(
                             child: Text(
                               text.setupProgress(step + 1, 4),
-                              style: TextStyle(color: colors.muted),
+                              style: TextStyle(
+                                color: colors.muted,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           ...List.generate(
                             4,
-                            (index) => Container(
-                              margin: const EdgeInsets.only(
-                                left: Cel.space / 4,
-                              ),
-                              width: Cel.space / 2,
-                              height: Cel.space / 2,
+                            (index) => AnimatedContainer(
+                              duration: MobileTokens.effects,
+                              margin: const EdgeInsets.only(left: 5),
+                              width: index == step ? 18 : 8,
+                              height: 8,
                               decoration: BoxDecoration(
                                 color: index <= step
-                                    ? colors.brand
-                                    : colors.muted,
-                                shape: BoxShape.circle,
+                                    ? colors.brandFill
+                                    : colors.outline,
+                                borderRadius: BorderRadius.circular(999),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: Cel.space * 1.5),
+                      const SizedBox(height: Cel.space * 1.25),
                       if (device.busy) ...[
                         const LinearProgressIndicator(),
                         const SizedBox(height: Cel.space),
                       ],
                       if (step == 0) ...[
                         Container(
-                          decoration: BoxDecoration(
-                            color: colors.hero,
-                            borderRadius: BorderRadius.circular(
-                              MobileTokens.heroRadius,
-                            ),
+                          decoration: colors.celCard(
+                            fill: colors.hero,
+                            border: colors.ink,
+                            radius: MobileTokens.heroRadius,
                           ),
-                          padding: const EdgeInsets.all(Cel.space),
+                          padding: const EdgeInsets.all(Cel.space * 1.25),
                           child: const Center(
                             child: CompanionMascot(
                               phase: CompanionPhase.ready,
@@ -109,21 +109,21 @@ class PhoneSetup extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: Cel.space * 1.5),
+                        const SizedBox(height: Cel.space * 1.25),
                       ],
                       Text(
                         title,
                         style: Theme.of(context).textTheme.headlineLarge,
                       ),
-                      const SizedBox(height: Cel.space),
+                      const SizedBox(height: Cel.spaceSm),
                       Text(
                         body,
                         style: TextStyle(
-                          color: colors.muted,
+                          color: colors.inkSecondary,
                           height: MobileTokens.lineHeight,
                         ),
                       ),
-                      const SizedBox(height: Cel.space * 1.5),
+                      const SizedBox(height: Cel.space * 1.25),
                       if (step == 1) ...[
                         _SetupPanel(
                           icon: Icons.computer_rounded,
@@ -141,9 +141,13 @@ class PhoneSetup extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: Cel.space),
                       ],
-                      if (step == 2) pairing,
+                      if (step == 2)
+                        PhoneCard(
+                          padding: const EdgeInsets.all(Cel.space),
+                          decoration: colors.celCard(),
+                          child: pairing,
+                        ),
                       if (step == 3) ...[
                         _SetupPanel(
                           icon: Icons.notifications_none_rounded,
@@ -153,7 +157,10 @@ class PhoneSetup extends StatelessWidget {
                               device.snapshot['notifications_enabled'] == true
                               ? Text(
                                   text.setupNotificationsReady,
-                                  style: TextStyle(color: colors.active),
+                                  style: TextStyle(
+                                    color: colors.active,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 )
                               : OutlinedButton(
                                   onPressed: device.busy
@@ -167,6 +174,7 @@ class PhoneSetup extends StatelessWidget {
                           icon: Icons.touch_app_outlined,
                           title: text.setupControl,
                           body: text.setupControlBody,
+                          notebook: true,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -210,7 +218,7 @@ class PhoneSetup extends StatelessWidget {
             ),
             if (step != 2)
               Padding(
-                padding: const EdgeInsets.all(Cel.space * 1.5),
+                padding: const EdgeInsets.all(Cel.space * 1.25),
                 child: SizedBox(
                   width: double.infinity,
                   child: PressFeedback(
@@ -237,47 +245,69 @@ class PhoneSetup extends StatelessWidget {
   }
 }
 
-/// Group explanation and its explicit action; decoration never implies permission was granted.
 class _SetupPanel extends StatelessWidget {
   const _SetupPanel({
     required this.icon,
     required this.title,
     required this.body,
+    this.notebook = false,
     this.child,
   });
   final IconData icon;
   final String title;
   final String body;
+  final bool notebook;
   final Widget? child;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: PhoneColors.of(context).surface,
-    borderRadius: BorderRadius.circular(MobileTokens.panelRadius),
-    clipBehavior: Clip.antiAlias,
-    child: Padding(
+  Widget build(BuildContext context) {
+    final colors = PhoneColors.of(context);
+    return PhoneCard(
       padding: const EdgeInsets.all(Cel.space),
+      decoration: colors.celCard(notebook: notebook),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(
-            icon,
-            color: PhoneColors.of(context).brand,
-            size: MobileTokens.titleSize,
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: notebook
+                      ? colors.tapeContainer
+                      : colors.brandContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: notebook ? colors.tapeSignal : colors.brandSignal,
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: notebook ? Cel.onTapeContainer : colors.brand,
+                ),
+              ),
+              const SizedBox(width: Cel.spaceSm),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: Cel.space / 2),
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: Cel.space / 2),
+          const SizedBox(height: Cel.spaceXs),
           Text(
             body,
             style: TextStyle(
-              color: PhoneColors.of(context).muted,
+              color: colors.inkSecondary,
               height: MobileTokens.lineHeight,
             ),
           ),
-          if (child != null) ...[const SizedBox(height: Cel.space), child!],
+          if (child != null) ...[const SizedBox(height: Cel.spaceSm), child!],
         ],
       ),
-    ),
-  );
+    );
+  }
 }

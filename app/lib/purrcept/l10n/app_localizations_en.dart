@@ -530,4 +530,173 @@ class PhoneL10nEn extends PhoneL10n {
 
   @override
   String get copyConnectionError => 'Copy connection error details';
+
+  @override
+  String get avatarStudioTitle => 'Avatars & Social Profile';
+
+  @override
+  String get avatarStudioSubtitle =>
+      'Customize chat avatars, Cel presets, and your display name';
+
+  @override
+  String get companionAvatarTab => 'Companion';
+
+  @override
+  String get userAvatarTab => 'My Profile';
+
+  @override
+  String get pickAlbumAvatar => 'Choose photo from album';
+
+  @override
+  String get resetDefaultAvatar => 'Reset to default';
+
+  @override
+  String get presetAvatarsTitle => 'Cel Academy Presets';
+
+  @override
+  String get userNicknameLabel => 'My display name';
+
+  @override
+  String get userNicknameHint => 'Leave blank to show “You”';
+
+  @override
+  String get saveProfile => 'Save profile';
+
+  @override
+  String get stickerButton => 'Stickers';
+
+  @override
+  String get imageButton => 'Send photo';
+
+  @override
+  String get voiceModeButton => 'Voice input';
+
+  @override
+  String get keyboardModeButton => 'Keyboard input';
+
+  @override
+  String get holdToTalk => 'Hold to talk';
+
+  @override
+  String get releaseToSend => 'Release to send';
+
+  @override
+  String get slideUpToCancel => 'Slide up to cancel';
+
+  @override
+  String get releaseToCancel => 'Release to cancel';
+
+  @override
+  String get tapToRecordHint => 'Hold to record · or tap to start/stop';
+
+  @override
+  String get voiceTooShortError =>
+      'Recording was too short. Hold a bit longer to send.';
+
+  @override
+  String get micPermissionError =>
+      'Microphone permission is needed to send voice messages.';
+
+  @override
+  String get micUnavailableError => 'Microphone is currently unavailable.';
+
+  @override
+  String get invalidMediaError =>
+      'Could not read the selected image or media file.';
+
+  @override
+  String get mediaPlaybackError => 'This voice clip cannot be played locally.';
+
+  @override
+  String get mediaUploadError =>
+      'The attachment could not be uploaded. Your message is saved on this phone; retry when the computer is available.';
+
+  @override
+  String get mediaDownloadError =>
+      'The message is synced, but its attachment could not be downloaded. Retry when the computer is available.';
+
+  @override
+  String get retryMedia => 'Retry attachments';
+
+  @override
+  String get stickerPackBuiltIn => 'Companion Pack';
+
+  @override
+  String get stickerPackCustom => 'My favorites';
+
+  @override
+  String get addCustomSticker => 'Add sticker';
+
+  @override
+  String get customStickerTagTitle => 'Label this sticker';
+
+  @override
+  String get customStickerTagHint => 'e.g. Happy, Pat pat, Got it';
+
+  @override
+  String get deleteSticker => 'Remove from my favorites';
+
+  @override
+  String get noCustomStickers =>
+      'Save images you like, or add a sticker from your gallery. Favorites stay on this phone and can be added offline.';
+
+  @override
+  String get replyAction => 'Reply';
+
+  @override
+  String get copyAction => 'Copy text';
+
+  @override
+  String get copiedToast => 'Copied to clipboard';
+
+  @override
+  String get saveAsStickerAction => 'Save as sticker';
+
+  @override
+  String get savedStickerToast => 'Saved to my sticker favorites';
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
+  String replyingTo(String name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get voiceMessageTag => 'Voice message';
+
+  @override
+  String get imageMessageTag => 'Photo';
+
+  @override
+  String get stickerMessageTag => 'Sticker';
+
+  @override
+  String get playVoice => 'Play voice';
+
+  @override
+  String get stopVoice => 'Stop playback';
+
+  @override
+  String get quickIcebreakerPat => 'Pat pat';
+
+  @override
+  String get quickIcebreakerPeek => 'What are you up to today?';
+
+  @override
+  String get quickIcebreakerTea => 'Let’s take a tea break';
+
+  @override
+  String get profileCardTitle => 'Avatars & Social Profile';
+
+  @override
+  String get connectionCardTitle => 'Engine Connection';
+
+  @override
+  String get controlCardTitle => 'Screen & Device Control';
+
+  @override
+  String get deleteLocalStickerDescription =>
+      'Removes this phone\'s favorite only. The Bot\'s sticker library and images in past chats are unchanged.';
 }

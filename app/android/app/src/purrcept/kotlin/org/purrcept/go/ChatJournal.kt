@@ -11,7 +11,8 @@ import java.util.UUID
  * runs synchronously through Room; projections and acknowledgments are published only after commit.
  * A chat.accepted receipt is independent of the sync stream: it never deletes the original outbox
  * payload. Reconnect may resend that exact payload until the matching sync event commits atomically
- * with cursor advancement. No device commands pass through this replayable journal.
+ * with cursor advancement. Rich metadata (stickers, voice, images, quote-replies) is persisted in a
+ * sidecar record so legacy servers only receive strict {message_id, text, occurred_at} frames.
  */
 internal class ChatJournal(
     private val records: Records,
@@ -32,6 +33,71 @@ internal class ChatJournal(
         return payload
     }
 
+    /** Enqueue a rich message (sticker, voice, image, or quote-reply) while keeping outbox replay-safe. */
+    fun enqueueRich(
+        text: String,
+        rich: JSONObject,
+        identity: String = UUID.randomUUID().toString(),
+        occurredAt: String = Instant.now().toString(),
+        queuedAt: Long = System.currentTimeMillis(),
+    ): JSONObject {
+        require(text.isNotBlank() && text.length <= 32768) { "invalid_message" }
+        val wire = JSONObject().put("message_id", identity).put("text", text).put("occurred_at", occurredAt)
+        for (key in WIRE_RICH_KEYS) {
+            if (rich.has(key) && !rich.isNull(key)) wire.put(key, rich.get(key))
+        }
+        val encoded = wire.toString()
+        require(encoded.toByteArray(Charsets.UTF_8).size <= 60000) { "message_too_large" }
+        val localMeta = JSONObject()
+        for (key in LOCAL_RICH_KEYS) {
+            if (rich.has(key) && !rich.isNull(key)) localMeta.put(key, rich.get(key))
+        }
+        transaction {
+            records.put(Record("out:$identity", "outbox", encoded, queuedAt))
+            if (localMeta.length() > 0) {
+                records.put(Record("rich:$identity", "rich", localMeta.toString(), queuedAt))
+            }
+        }
+        return wire
+    }
+
+    /** Record uploaded media_id on both the pending wire submission and durable local rich metadata. */
+    fun attachMediaId(identity: String, mediaId: String, mediaType: String) {
+        transaction {
+            records.get("out:$identity")?.let { existing ->
+                val updated = JSONObject(existing.payload)
+                    .put("media_id", mediaId)
+                    .put("media_type", mediaType)
+                records.put(Record(existing.id, existing.kind, updated.toString(), existing.sequence))
+            }
+            val meta = records.get("rich:$identity")?.let { JSONObject(it.payload) } ?: JSONObject()
+            meta.put("media_id", mediaId).put("media_type", mediaType)
+            records.put(Record("rich:$identity", "rich", meta.toString(), System.currentTimeMillis()))
+        }
+    }
+
+    /** Cache downloaded local_path for an outgoing/synced attachment so offline playback & viewing work. */
+    fun attachLocalPath(identity: String, localPath: String, mediaType: String? = null) {
+        transaction {
+            val meta = records.get("rich:$identity")?.let { JSONObject(it.payload) } ?: JSONObject()
+            meta.put("local_path", localPath)
+            if (!mediaType.isNullOrBlank()) meta.put("media_type", mediaType)
+            records.put(Record("rich:$identity", "rich", meta.toString(), System.currentTimeMillis()))
+        }
+    }
+
+    fun localMeta(identity: String): JSONObject? =
+        records.get("rich:$identity")?.let { JSONObject(it.payload) }
+
+    /** Strip optional rich fields when communicating with an older Engine without rich_chat support. */
+    fun wirePayload(submission: JSONObject, richSupported: Boolean): JSONObject {
+        if (richSupported) return JSONObject(submission.toString())
+        return JSONObject()
+            .put("message_id", submission.getString("message_id"))
+            .put("text", submission.getString("text"))
+            .put("occurred_at", submission.getString("occurred_at"))
+    }
+
     /** Return original submissions only; receipt and display metadata must never enter chat.submit. */
     fun pending(): List<JSONObject> = records.list("outbox").map { JSONObject(it.payload) }
 
@@ -41,7 +107,6 @@ internal class ChatJournal(
         val inputId = receipt.getString("input_id")
         require(inputId.isNotBlank()) { "invalid_input_identity" }
         transaction {
-            // A late receipt after sync must not resurrect an outbox entry or leave an orphan receipt.
             if (records.get("out:$identity") != null) {
                 records.put(Record("accepted:$identity", "accepted", receipt.toString(), 0))
             }
@@ -86,8 +151,6 @@ internal class ChatJournal(
                 if (known.optString("input_id") != inputId) continue
                 val previous = records.get("progress:$inputId")
                 val version = item.getLong("version")
-                // The same input version may gain a newer call receipt without changing input stage.
-                // Connection revisions were checked before this hand-off; equal input versions are valid.
                 if (previous == null || previous.sequence <= version) {
                     records.put(Record("progress:$inputId", "progress", item.toString(), version))
                 }
@@ -96,25 +159,54 @@ internal class ChatJournal(
     }
 
     /**
-     * Project one bubble per synced or pending message. An accepted unsynced submission stays visible
-     * across process death. These states prove persistence/admission only, never that the agent read
-     * the message or will reply. The original payload remains untouched for idempotent replay.
+     * Project one bubble per synced or pending message, enriched with local rich metadata (local file
+     * paths, stickers, waveforms, quote-replies) without mutating the immutable outbox payload.
      */
     fun messages(): JSONArray {
         val result = JSONArray()
         for (record in records.list("message")) {
             val message = JSONObject(record.payload).put("delivery_state", "synced")
+            val id = message.getString("message_id")
+            mergeRich(message, id)
             val inputId = message.optString("input_id")
             records.get("progress:$inputId")?.let { message.put("processing", JSONObject(it.payload)) }
             result.put(message)
         }
         for (record in records.list("outbox")) {
             val message = JSONObject(record.payload)
-            val receipt = records.get("accepted:${message.getString("message_id")}")
+            val id = message.getString("message_id")
+            mergeRich(message, id)
+            val receipt = records.get("accepted:$id")
             message.put("direction", "incoming").put("delivery_state", if (receipt == null) "pending" else "accepted")
             if (receipt != null) message.put("input_id", JSONObject(receipt.payload).getString("input_id"))
             result.put(message)
         }
         return result
+    }
+
+    private fun mergeRich(target: JSONObject, identity: String) {
+        val rich = records.get("rich:$identity")?.let { JSONObject(it.payload) } ?: return
+        for (key in LOCAL_RICH_KEYS) {
+            if (!target.has(key) && rich.has(key) && !rich.isNull(key)) {
+                target.put(key, rich.get(key))
+            }
+        }
+    }
+
+    companion object {
+        private val WIRE_RICH_KEYS = listOf(
+            "kind",
+            "sticker_id",
+            "media_id",
+            "media_type",
+            "duration_ms",
+            "waveform",
+            "reply_to_id",
+        )
+        private val LOCAL_RICH_KEYS = WIRE_RICH_KEYS + listOf(
+            "local_path",
+            "reply_preview",
+            "reply_sender",
+        )
     }
 }

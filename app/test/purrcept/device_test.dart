@@ -55,6 +55,105 @@ void main() {
     },
   );
 
+  for (final mediaError in ['media_upload_failed', 'media_download_failed']) {
+    testWidgets(
+      '$mediaError exposes native retry without composing a new message',
+      (tester) async {
+        snapshot['phase'] = 'online';
+        snapshot['error'] = mediaError;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(DeviceController.channel, (call) async {
+              calls.add(call);
+              if (call.method == 'retry_media') snapshot.remove('error');
+              if (call.method == 'snapshot') return jsonEncode(snapshot);
+              return '{}';
+            });
+        await tester.pumpWidget(const PurrceptApp());
+        await tester.pumpAndSettle();
+        expect(find.text('Retry attachments'), findsOneWidget);
+        await tester.tap(find.text('Retry attachments'));
+        await tester.pumpAndSettle();
+        expect(calls.where((call) => call.method == 'retry_media').length, 1);
+        expect(calls.any((call) => call.method == 'send'), isFalse);
+        expect(calls.any((call) => call.method == 'control'), isFalse);
+        expect(find.text('Retry attachments'), findsNothing);
+      },
+    );
+  }
+
+  testWidgets(
+    'personal favorite sends local bytes without borrowing the Bot library',
+    (tester) async {
+      snapshot['phase'] = 'offline';
+      snapshot['custom_stickers'] = [
+        {
+          'sticker_id': 'local-cat',
+          'tag': 'My cat',
+          'local_path': '/phone/favorites/cat.png',
+          'media_type': 'image/png',
+        },
+      ];
+      await tester.pumpWidget(const PurrceptApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Stickers'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('My favorites (1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('My cat'));
+      await tester.pumpAndSettle();
+      final send = calls.singleWhere((call) => call.method == 'send');
+      final args = Map<String, Object?>.from(send.arguments as Map);
+      expect(args['sticker_id'], 'local-cat');
+      expect(args.containsKey('media_id'), isFalse);
+      expect(args['local_path'], '/phone/favorites/cat.png');
+      expect(args['kind'], 'sticker');
+    },
+  );
+
+  for (final (width, scale) in [
+    (320.0, 1.0),
+    (360.0, 1.0),
+    (390.0, 1.0),
+    (360.0, 2.0),
+  ]) {
+    testWidgets(
+      'composer retains typing width with sticker drawer at $width / $scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 780);
+        tester.binding.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(
+          tester.binding.platformDispatcher.clearTextScaleFactorTestValue,
+        );
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(const PurrceptApp());
+        await tester.pumpAndSettle();
+        final input = find.byKey(const ValueKey('chat-composer'));
+        final size = tester.getSize(input);
+        expect(size.width, greaterThanOrEqualTo(width - 100));
+        expect(size.height, lessThan(80 * scale));
+        await tester.tap(find.byTooltip('Stickers'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(tester.getSize(input), size);
+        final inputBottom = tester.getBottomLeft(input).dy;
+        expect(
+          tester.getTopLeft(find.byTooltip('Stickers')).dy,
+          greaterThan(inputBottom),
+        );
+        await tester.ensureVisible(find.text('My favorites (0)'));
+        await tester.tap(find.text('My favorites (0)'));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Favorites stay on this phone'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('a failed local enqueue preserves the draft', (tester) async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(DeviceController.channel, (call) async {
@@ -418,6 +517,48 @@ void main() {
         calls.any((call) => call.method == 'scan' || call.method == 'pair'),
         isFalse,
       );
+    },
+  );
+
+  testWidgets(
+    'sticker drawer dispatches built-in companion sticker and avatar studio saves presets',
+    (tester) async {
+      snapshot['phase'] = 'online';
+      snapshot['subject_name'] = 'Mimi';
+      await tester.pumpWidget(const PurrceptApp());
+      await tester.pumpAndSettle();
+
+      // Target the drawer item rather than the same caption in the quick-reply row.
+      await tester.tap(find.byTooltip('Stickers'));
+      await tester.pumpAndSettle();
+      expect(find.text('Companion Pack'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(GridView),
+          matching: find.text('Pat pat'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final sends = calls.where((call) => call.method == 'send').toList();
+      expect(sends.length, 1);
+      final args = Map<String, Object?>.from(sends.single.arguments as Map);
+      expect(args['kind'], 'sticker');
+      expect(args['sticker_id'], 'pat_head');
+
+      // Open Device tab -> Avatar Studio -> select Sakura preset
+      await tester.tap(find.text('Device'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, 'Avatars & Social Profile'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sakura'));
+      await tester.pumpAndSettle();
+      final profileCalls = calls
+          .where((c) => c.method == 'set_profile')
+          .toList();
+      expect(profileCalls.isNotEmpty, isTrue);
     },
   );
 }

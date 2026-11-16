@@ -14,12 +14,21 @@ internal class EngineExperience(private val records: Records) {
         private set
     var supported = false
         private set
+    var richChatSupported = false
+        private set
     private var revision = 0L
 
     /** Begin a new connection; old work cannot be inferred from cached identity. */
     fun connected(features: JSONArray?) {
         disconnected()
-        supported = features != null && (0 until features.length()).any { features.optString(it) == "engine_state" }
+        if (features != null) {
+            for (index in 0 until features.length()) {
+                when (features.optString(index)) {
+                    "engine_state" -> supported = true
+                    "rich_chat" -> richChatSupported = true
+                }
+            }
+        }
     }
 
     /** Invalidate live state without forgetting the verified name of the paired subject. */
@@ -27,6 +36,7 @@ internal class EngineExperience(private val records: Records) {
         current = null
         revision = 0
         supported = false
+        richChatSupported = false
     }
 
     /** Validate bounded presentation facts before any cache mutation; stale revisions are ignored. */

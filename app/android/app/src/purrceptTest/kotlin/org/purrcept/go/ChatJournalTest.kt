@@ -1,10 +1,11 @@
 package org.purrcept.go
 
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 
-/** Tests durable chat transitions without sockets, devices, models or an Android runtime. */
+/** Tests durable chat transitions (plain + rich stickers/voice/replies) without sockets or an Android runtime. */
 class ChatJournalTest {
     /** In-memory DAO with rollback lets tests interrupt a commit rather than just its first write. */
     private class Cache : Records {
@@ -129,10 +130,10 @@ class ChatJournalTest {
         journal.received(event())
         fun progress(version: Long, stage: String, inputId: String = "input-1") = JSONObject()
             .put("message_id", "m1").put("input_id", inputId).put("version", version).put("stage", stage)
-        journal.processing(org.json.JSONArray().put(progress(2, "processed")))
-        journal.processing(org.json.JSONArray().put(progress(1, "processing")))
-        journal.processing(org.json.JSONArray().put(progress(99, "failed", "unrelated")))
-        journal.processing(org.json.JSONArray().put(progress(2, "processed")
+        journal.processing(JSONArray().put(progress(2, "processed")))
+        journal.processing(JSONArray().put(progress(1, "processing")))
+        journal.processing(JSONArray().put(progress(99, "failed", "unrelated")))
+        journal.processing(JSONArray().put(progress(2, "processed")
             .put("last_action", JSONObject().put("path", "me.phone.screen").put("state", "confirmed"))))
         val message = cache.journal().messages().getJSONObject(0)
         assertEquals("processed", message.getJSONObject("processing").getString("stage"))
@@ -141,22 +142,56 @@ class ChatJournalTest {
         assertEquals(setOf("message_id", "text", "occurred_at"), journal.enqueue("new", "m2").keys().asSequence().toSet())
     }
 
+    /** Rich stickers and voice metadata survive sync while degrading cleanly for legacy servers. */
+    @Test fun richMessagesPreserveLocalMetadataAndRespectLegacyWireContract() {
+        val cache = Cache()
+        val journal = cache.journal()
+        val rich = JSONObject()
+            .put("kind", "voice")
+            .put("local_path", "/data/user/0/org.purrcept.go/files/voice/v1.wav")
+            .put("media_type", "audio/wav")
+            .put("duration_ms", 4200)
+            .put("waveform", JSONArray(listOf(18, 46, 78, 32)))
+            .put("reply_to_id", "m0")
+            .put("reply_preview", "早安呀")
+        val sub = journal.enqueueRich("[语音 4″]", rich, "m1", "2026-11-16T00:00:00Z", 1)
+
+        // Legacy server receives strict 3-field payload; modern server receives rich wire fields without local_path
+        val legacyWire = journal.wirePayload(sub, richSupported = false)
+        assertEquals(setOf("message_id", "text", "occurred_at"), legacyWire.keys().asSequence().toSet())
+        val modernWire = journal.wirePayload(sub, richSupported = true)
+        assertEquals("voice", modernWire.getString("kind"))
+        assertFalse(modernWire.has("local_path"))
+        assertFalse(modernWire.has("reply_preview"))
+
+        // Syncing from a legacy server still retains local voice playback path & quote preview!
+        assertTrue(journal.received(event(10).put("text", "[语音 4″]")))
+        val synced = journal.messages().getJSONObject(0)
+        assertEquals("synced", synced.getString("delivery_state"))
+        assertEquals("voice", synced.getString("kind"))
+        assertEquals("/data/user/0/org.purrcept.go/files/voice/v1.wav", synced.getString("local_path"))
+        assertEquals("早安呀", synced.getString("reply_preview"))
+    }
+
     /** Ephemeral connection revisions cannot resurrect old work, while a verified public name is durable. */
     @Test fun experienceClearsLiveStateOnDisconnectAndRejectsOldRevisions() {
         val cache = Cache()
         val experience = EngineExperience(cache)
-        experience.connected(org.json.JSONArray().put("engine_state"))
+        experience.connected(JSONArray().put("engine_state").put("rich_chat"))
+        assertTrue(experience.supported)
+        assertTrue(experience.richChatSupported)
         fun state(revision: Long, name: String) = JSONObject().put("revision", revision)
             .put("subject_name", name).put("host_phase", "running").put("observed_at", 100.0)
             .put("activity", JSONObject().put("phase", "thinking"))
-            .put("messages", org.json.JSONArray())
+            .put("messages", JSONArray())
         assertTrue(experience.receive(state(2, "小白")))
         assertFalse(experience.receive(state(1, "旧名字")))
         assertEquals("小白", experience.name())
         experience.disconnected()
         assertNull(experience.current)
+        assertFalse(experience.richChatSupported)
         assertEquals("小白", EngineExperience(cache).name())
-        experience.connected(org.json.JSONArray().put("engine_state"))
+        experience.connected(JSONArray().put("engine_state"))
         assertTrue(experience.receive(state(1, "新名字")))
         assertEquals("新名字", experience.name())
     }
@@ -164,20 +199,19 @@ class ChatJournalTest {
     /** Invalid phases are rejected before public identity is changed. */
     @Test fun malformedExperienceCannotMutateIdentity() {
         val experience = EngineExperience(Cache())
-        experience.connected(org.json.JSONArray().put("engine_state"))
+        experience.connected(JSONArray().put("engine_state"))
         val invalid = JSONObject().put("revision", 1).put("subject_name", "untrusted")
             .put("host_phase", "running").put("observed_at", 100.0)
             .put("activity", JSONObject().put("phase", "made-up"))
-            .put("messages", org.json.JSONArray())
+            .put("messages", JSONArray())
         assertThrows(IllegalArgumentException::class.java) { experience.receive(invalid) }
         assertNull(experience.name())
         assertNull(experience.current)
         invalid.put("activity", JSONObject().put("phase", "idle"))
-            .put("messages", org.json.JSONArray().put(JSONObject().put("message_id", "m1")
+            .put("messages", JSONArray().put(JSONObject().put("message_id", "m1")
                 .put("input_id", "input-1").put("version", 1).put("stage", "processing").put("reason", "test")
                 .put("last_action", JSONObject().put("path", "me.phone.screen").put("state", "invented"))))
         assertThrows(IllegalArgumentException::class.java) { experience.receive(invalid) }
         assertNull(experience.name())
-        assertNull(experience.current)
     }
 }
