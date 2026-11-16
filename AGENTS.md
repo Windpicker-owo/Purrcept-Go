@@ -2,25 +2,21 @@
 
 Purrcept Go 是 Purrcept Engine 的远程安卓设备与聊天入口，基于 dsh-Go fork。
 主体只在电脑运行，安卓不装配模型或本机引擎。当前入口为 `app/lib/purrcept/`，
-原生源集为 `app/android/app/src/purrcept/`。其余上游源码仅作为迁移参考，
+原生源集为 `app/android/app/src/purrcept/`。未使用的上游源码已清理，可从 Git 历史查阅。
 不应重新接入 DSH 服务。开始前读 `docs/purrcept-architecture.md` 与 CONTRIBUTING.md。
 Purrcept 的协议替换不要求兼容 DSH 协议。公开源码文档解释资源所有权、接管与恢复语义。
 
 ## 仓库布局
 
 ```
-app/lib/purrcept/             当前 Flutter 界面与原生服务状态投影
-app/lib/purrcept/l10n/        当前中英文 ARB 输入与标准生成物
-app/android/app/src/purrcept/ 当前 Kotlin/Java/资源源集
-app/lib/ 的其他目录           上游参考源码，不进入当前入口
-packages/dsh_client/         纯 Dart 客户端：HTTP/SSE、mux、会话与删除 API
-packages/dsh_remote/         远程传输：WebRTC / LAN / TURN / 中继
-runtime/                     打补丁的 DSH 引擎运行时
-runtime/bridge/dsh-go-bridge/  App ↔ 引擎的 HTTP 桥（/dsh-go/v1/*，含会话删除路由）
-runtime/patches/             引擎补丁及其 pins.json（补丁与版本钉死）
-sdk/plugin-kit/              插件 SDK
-tooling/                     APK 构建与构建号脚本
-docs/                        架构、发布、路线图、用户指南
+app/lib/purrcept/             Flutter 界面、实时状态投影和中英文本地化
+app/android/app/src/purrcept/ Kotlin/Java 服务、Room、Keystore 和安卓能力
+app/android/app/src/main/AndroidManifest.xml 标准 Android 清单与 Flutter 入口元数据
+app/test/purrcept/            Flutter 行为、布局和动效测试
+app/android/app/src/purrceptTest/ 原生协议、状态与 TLS 回归测试
+design/                      Purrcept Cel Token 输入
+tooling/                     Token 生成与无内容手机评测记录器
+docs/                        架构、通信协议、移动体验和手机评测夹具
 ```
 
 ## 命令
@@ -28,17 +24,14 @@ docs/                        架构、发布、路线图、用户指南
 按改动面选择验证，在 PR/报告里写实际执行的命令和结果。完整说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ```bash
-(cd app && flutter pub get && flutter analyze && flutter test test/purrcept) # 当前应用
-(cd packages/dsh_client && dart pub get && dart analyze && dart test)
-(cd packages/dsh_remote && dart pub get && dart analyze && dart test)
-(cd sdk/plugin-kit && npm install && npm test)
-node --test runtime/tests/*.test.mjs                               # 引擎桥/补丁测试
-python3 app/tool/l10n_merge.py --check                             # 文案生成检查
-python3 app/tool/guide_sync.py --check                             # 用户指南同步检查
-tooling/build-apk.sh --build-name <x.y.z>                          # 构建 APK
+python tooling/export_cel.py --check
+python -m unittest discover -s tooling -p test_phone_eval.py
+(cd app && flutter pub get && flutter analyze --no-fatal-infos && flutter test)
+(cd app && flutter build apk --debug --target-platform android-arm64)
+(cd app/android && ./gradlew :app:testDebugUnitTest --console=plain)
 ```
 
-CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部分，在 `main` 上跑全量，结果看 `CI OK`。它不碰真机和真实账号，绿了不等于手机上没问题。
+CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部分，在 `main` 上跑全量，结果查看 `Purrcept Android` 工作流。它不碰真机和真实账号，绿了不等于手机上没问题。
 
 ## 硬规则
 
@@ -50,20 +43,17 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 - 收到外部 PR：关闭它并回复"暂不接受外部 PR，请改用 issue 提供建议"。入口检查（`.github/workflows/pr-gate.yml`）会自动关闭外部 PR；人工按同一政策处理，不要"先合并再说"。
 - 不要因为某个 issue 有了实现，就自动把实现包装成 PR 合入。
 
-### 源码、生成物与运行时补丁
+### 源码与生成物
 
 - 不手改生成物：`app/build/`、`.dart_tool/`、生成的 l10n 产物等；改输入后运行对应生成器。
-- 当前界面文案改 `app/lib/purrcept/l10n/app_{zh,en}.arb`，中英文同步，再跑 `flutter gen-l10n`；不要手改生成结果。上游 parts 与合并器只用于旧实现参考。
-- 用户指南改 `docs/guide/`，再跑 `python3 app/tool/guide_sync.py`。
-- 引擎补丁在 `runtime/patches/`：补丁文件与 `pins.json` 保持同步，不手改正被补丁覆盖的产物。
-- 插件教学技能改 `sdk/plugin-kit/skill/` 或 SDK 对应输入，再跑 `node sdk/plugin-kit/scripts/sync-skill.mjs`。
+- 当前界面文案改 `app/lib/purrcept/l10n/app_{zh,en}.arb`，中英文同步，再跑 `flutter gen-l10n`；不要手改生成结果。上游 parts 与合并器已移除，不再运行旧生成流程。
 
 ### 行为与契约
 
 - 客户端、桥接、插件协议的改动，同时检查另一端的调用方与向后兼容。
 - 危险操作（删除会话、权限、凭据）以主机/引擎的实际回答为准，不用本地推断代替；失败要有稳定错误码，不静默吞掉。
 - 当前界面文案中英两版同步（`app/lib/purrcept/l10n/app_zh.arb` 与 `app_en.arb`）。
-- 双语文档同步：README、CONTRIBUTING、SECURITY、docs/guide 中英两版同步。
+- 双语文档同步：README、CONTRIBUTING、SECURITY 中英两版同步。
 
 ### 凭据与隐私
 
@@ -71,6 +61,8 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 - 诊断包和日志外发前人工检查；自动打码不能当成保证。
 
 ### Git 安全
+
+- Git 提交标题与正文使用中文。
 
 - **每次开工前先拉平基线**：`git fetch origin main` 后把当前分支同步到最新 `origin/main`（能快进就 `git merge --ff-only`），检查、改动和开 PR 都在最新基线上做。不在落后 `main` 的分支上直接叠加任务——否则容易重复实现 `main` 已经修好的东西，白改一遍。
 - 拉平前先处理未提交改动：自己的改动先备份（patch 或临时副本）再让分支快进；用户或其他任务的未提交改动不得丢弃、reset、stash 或覆盖，拉不平就停下来问。
@@ -90,7 +82,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 
 审查 PR 或改动时，以**不引入新 Bug、最小必要改动、保持代码简洁**为核心：
 
-1. **防止回归**：优先检查新增 Bug、竞态、资源泄漏、性能退化、兼容性问题，特别关注共享层（`packages/dsh_client`、bridge、runtime 补丁）对既有主机连接方式的影响。
+1. **防止回归**：优先检查新增 Bug、竞态、资源泄漏、性能退化、兼容性问题，重点核对 Flutter、原生服务与 Engine 插件之间的交接。
 2. **避免过度设计**：识别重复实现、无必要的抽象、冗余封装和过度防御性编程；只在存在更简单等效方案时报告，不误判必要的安全校验和错误处理。
 3. **严格控制范围**：改动应围绕目标与关联 issue，不夹带无关重构、格式化、依赖升级或其他功能修改；必要的测试和文档同步除外。
 4. **保证实质价值**：关注无效代码、重复逻辑、无意义拆分和缺乏有效断言的测试；不以代码行数或提交次数判断贡献，不推测贡献者动机。

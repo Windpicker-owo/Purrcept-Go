@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'experience.dart';
+
 /// Owns one native-state subscription for a page; credentials and message admission stay native.
 class DeviceController extends ChangeNotifier {
   static const channel = MethodChannel('purrcept/device');
@@ -14,8 +16,12 @@ class DeviceController extends ChangeNotifier {
   StreamSubscription<Object?>? _subscription;
   Map<String, dynamic> snapshot = {};
   String? _requestError;
+
+  /// Native exception class names only; the next user request clears this temporary diagnostic.
+  String? requestDiagnostics;
   String? _serviceError;
   bool busy = false;
+  bool loaded = false;
   bool _disposed = false;
   bool _refreshing = false;
   bool _refreshAgain = false;
@@ -33,6 +39,9 @@ class DeviceController extends ChangeNotifier {
   }
 
   bool get paired => snapshot['paired'] == true;
+
+  /// Setup progress is stored by the native service; existing pairings bypass first-run education.
+  int get setupStep => snapshot['setup_step'] as int? ?? (paired ? 4 : 0);
   bool get online => snapshot['phase'] == 'online';
 
   /// The user's online intent stays true while the transport is connecting or retrying.
@@ -40,6 +49,9 @@ class DeviceController extends ChangeNotifier {
 
   /// Native transport phase is independent of permission and agent control-session state.
   String get phase => snapshot['phase'] as String? ?? 'offline';
+
+  /// Current work and identity come from the paired Engine, independently of device control.
+  SubjectExperience get experience => SubjectExperience.fromSnapshot(snapshot);
 
   /// Local failures remain visible across network refreshes until another user request starts.
   String? get error =>
@@ -53,6 +65,7 @@ class DeviceController extends ChangeNotifier {
   Future<String?> scanInvitation() async {
     busy = true;
     _requestError = null;
+    requestDiagnostics = null;
     notifyListeners();
     try {
       return await channel.invokeMethod<String>('scan');
@@ -78,6 +91,7 @@ class DeviceController extends ChangeNotifier {
         final raw = await channel.invokeMethod<String>('snapshot');
         if (raw != null && !_disposed) {
           snapshot = jsonDecode(raw) as Map<String, dynamic>;
+          loaded = true;
           _serviceError = null;
           notifyListeners();
         }
@@ -97,6 +111,7 @@ class DeviceController extends ChangeNotifier {
   ]) async {
     busy = true;
     _requestError = null;
+    requestDiagnostics = null;
     notifyListeners();
     try {
       await channel.invokeMethod<Object?>(method, arguments);
@@ -104,6 +119,9 @@ class DeviceController extends ChangeNotifier {
       return true;
     } on PlatformException catch (failure) {
       _requestError = failure.code;
+      requestDiagnostics = failure.details is String
+          ? failure.details as String
+          : null;
       return false;
     } finally {
       busy = false;

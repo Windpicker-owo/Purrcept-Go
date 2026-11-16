@@ -18,7 +18,6 @@ android {
         getByName("main") {
             java.setSrcDirs(listOf("src/purrcept/java", "src/purrcept/kotlin", "src/main/java/io/flutter/plugins"))
             res.setSrcDirs(listOf("src/purrcept/res"))
-            manifest.srcFile("src/purrcept/AndroidManifest.xml")
         }
         getByName("test") { java.setSrcDirs(listOf("src/purrceptTest/java")) }
         getByName("androidTest") { java.setSrcDirs(listOf("src/purrceptAndroidTest/java")) }
@@ -45,4 +44,6 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
 }

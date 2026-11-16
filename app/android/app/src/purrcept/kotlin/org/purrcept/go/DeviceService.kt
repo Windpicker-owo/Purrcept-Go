@@ -31,9 +31,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.atomic.AtomicLong
 
 /**
- * One serial executor owns network state and Room. Flutter only sends local requests and reads snapshots.
+ * One serial executor owns network state and Room; CommandLane owns blocking Android waits.
+ * Flutter requests and live network facts remain responsive while an accepted operation is running.
  * The service persists before acknowledging messages and before invoking Android operations. A process
  * death after an operation started leaves an unknown receipt, never permission to repeat the operation.
  */
@@ -41,9 +44,13 @@ class DeviceService : Service() {
     inner class LocalBinder : Binder() { val service: DeviceService get() = this@DeviceService }
     private val binder = LocalBinder()
     private val worker = Executors.newSingleThreadScheduledExecutor()
+    private val commands = CommandLane(worker)
+    private val connectionEpoch = AtomicLong()
+    @Volatile private var destroyed = false
     private val main = Handler(Looper.getMainLooper())
     private lateinit var database: PhoneDatabase
     private lateinit var chat: ChatJournal
+    private lateinit var experience: EngineExperience
     private lateinit var vault: DeviceVault
     private var client: OkHttpClient? = null
     private var socket: WebSocket? = null
@@ -57,6 +64,7 @@ class DeviceService : Service() {
     private var serverTimeAnchor = 0.0
     private var monotonicAnchor = 0L
     private var retrySeconds = 1L
+    private val controlLock = Any()
     @Volatile private var controlSession: String? = null
     @Volatile private var controlAllowed = false
     @Volatile var onChanged: (() -> Unit)? = null
@@ -65,6 +73,7 @@ class DeviceService : Service() {
         super.onCreate()
         database = Room.databaseBuilder(applicationContext, PhoneDatabase::class.java, "phone.db").build()
         chat = ChatJournal(database.records()) { change -> database.runInTransaction { change() } }
+        experience = EngineExperience(database.records())
         vault = DeviceVault(this)
         getSystemService(NotificationManager::class.java).apply {
             createNotificationChannel(NotificationChannel("device", getString(R.string.online_channel), NotificationManager.IMPORTANCE_LOW))
@@ -107,14 +116,22 @@ class DeviceService : Service() {
      * Queue an Activity request on the state owner; completion returns on the main thread after
      * durable work finishes. A successful send means local admission only. Failed admission leaves
      * Flutter's draft intact, and read-only snapshots must not emit their own invalidation event.
+     * Network failures may return class-name-only diagnostics beside the error code, never exception text.
      */
     fun submit(method: String, args: JSONObject, completion: (JSONObject?, String?) -> Unit) {
+        if (destroyed) { failRequest(completion, "service_unavailable"); return }
         worker.execute {
             try {
                 val result = when (method) {
                     "snapshot" -> snapshot()
                     "pair" -> pair(args.getString("invitation"), args.optString("name", "Android"))
                     "send" -> queueMessage(args.getString("text"))
+                    "onboarding" -> {
+                        val step = args.getInt("step")
+                        require(step in 0..4 && (step < 3 || credentials != null)) { "invalid_setup_step" }
+                        saveSetupStep(step)
+                        JSONObject()
+                    }
                     "forget" -> {
                         disconnect(); vault.clear(); credentials = null; database.records().clear()
                         main.post { stopForeground(STOP_FOREGROUND_REMOVE); stopSelf() }
@@ -125,7 +142,7 @@ class DeviceService : Service() {
                 // A read cannot invalidate its own projection: that would make Flutter query forever.
                 if (method != "snapshot") changed()
                 main.post { completion(result, null) }
-            } catch (error: IOException) { failRequest(completion, "network_error") }
+            } catch (error: IOException) { failRequest(completion, NetworkFailure.code(error, pairing = method == "pair"), NetworkFailure.diagnostics(error)) }
               catch (error: SQLiteException) { failRequest(completion, "storage_unavailable") }
               catch (error: JSONException) { failRequest(completion, "invalid_payload") }
               catch (error: IllegalArgumentException) { failRequest(completion, error.message ?: "invalid_argument") }
@@ -133,14 +150,16 @@ class DeviceService : Service() {
         }
     }
 
-    private fun failRequest(completion: (JSONObject?, String?) -> Unit, code: String) {
-        main.post { completion(null, code) }
+    private fun failRequest(completion: (JSONObject?, String?) -> Unit, code: String, diagnostics: String? = null) {
+        main.post { completion(diagnostics?.let { JSONObject().put("diagnostics", it) }, code) }
     }
 
     /** Revocation is immediate on the UI thread, before any queued network or Android work can run. */
     fun setControlAllowed(allowed: Boolean) {
-        controlAllowed = allowed
-        if (!allowed) controlSession = null
+        synchronized(controlLock) {
+            controlAllowed = allowed
+            if (!allowed) controlSession = null
+        }
         worker.execute { sendState(); changed() }
     }
 
@@ -162,6 +181,8 @@ class DeviceService : Service() {
                     .put("token", reply.getString("token")).put("device_id", reply.getString("device_id"))
                 vault.save(stored)
                 credentials = stored
+                // Pairing owns this hand-off, so process death cannot skip the optional permission guide.
+                saveSetupStep(3)
             }
         } finally { pinned.connectionPool.evictAll(); pinned.dispatcher.executorService.shutdown() }
         return JSONObject().put("paired", true)
@@ -177,13 +198,13 @@ class DeviceService : Service() {
         val request = Request.Builder().url(base.resolve("/phone/v1/channel")!!)
             .header("Authorization", "Bearer ${config.getString("token")}").build()
         socket = network.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) { worker.execute {
-                if (socket !== webSocket) return@execute
+            override fun onOpen(webSocket: WebSocket, response: Response) { networkEvent {
+                if (socket !== webSocket) return@networkEvent
                 helloSentAt = SystemClock.elapsedRealtime()
                 send("hello", JSONObject().put("through", chat.through()))
             } }
-            override fun onMessage(webSocket: WebSocket, text: String) { worker.execute {
-                if (socket !== webSocket) return@execute
+            override fun onMessage(webSocket: WebSocket, text: String) { networkEvent {
+                if (socket !== webSocket) return@networkEvent
                 try {
                     require(text.toByteArray(Charsets.UTF_8).size <= 65536) { "frame_too_large" }
                     receive(JSONObject(text))
@@ -193,10 +214,10 @@ class DeviceService : Service() {
                 catch (error: IllegalStateException) { lost(webSocket, "connection_lost") }
                 catch (error: SQLiteException) { lost(webSocket, "storage_unavailable") }
             } }
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { worker.execute {
-                lost(webSocket, if (response?.code == 403) "authentication_rejected" else "connection_lost")
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { networkEvent {
+                lost(webSocket, if (response?.code == 403) "authentication_rejected" else if (t is IOException) NetworkFailure.code(t) else "connection_lost")
             } }
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) { worker.execute { lost(webSocket, "connection_closed") } }
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) { networkEvent { lost(webSocket, "connection_closed") } }
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) { webSocket.close(code, null) }
         })
         changed()
@@ -205,7 +226,9 @@ class DeviceService : Service() {
     /** Only the current socket may revoke control and schedule another attempt on this executor. */
     private fun lost(old: WebSocket, code: String) {
         if (socket !== old) return
+        connectionEpoch.incrementAndGet()
         old.cancel(); socket = null; connectionId = null; controlSession = null
+        experience.disconnected()
         client?.connectionPool?.evictAll(); client?.dispatcher?.executorService?.shutdown(); client = null
         phase = if (onlineWanted) "reconnecting" else "offline"
         errorCode = code; changed()
@@ -218,8 +241,10 @@ class DeviceService : Service() {
 
     /** Explicit offline intent cancels retry ownership and clears transport errors and control. */
     private fun disconnect() {
+        connectionEpoch.incrementAndGet()
         onlineWanted = false; retry?.cancel(false); retry = null
         controlSession = null; connectionId = null
+        experience.disconnected()
         socket?.cancel(); socket = null
         client?.connectionPool?.evictAll(); client?.dispatcher?.executorService?.shutdown(); client = null
         phase = "offline"; errorCode = null; changed()
@@ -236,6 +261,7 @@ class DeviceService : Service() {
         require(frame.getInt("v") == 1) { "unsupported_protocol" }
         val payload = frame.getJSONObject("payload")
         if (frame.getString("type") == "welcome") {
+            experience.connected(payload.optJSONArray("features"))
             connectionId = frame.getString("connection_id")
             monotonicAnchor = SystemClock.elapsedRealtime()
             // The full round trip is a conservative transit bound. Later wall-clock changes cannot extend a command.
@@ -250,16 +276,23 @@ class DeviceService : Service() {
                     if (chat.received(payload) && payload.getString("direction") == "outgoing") {
                         notifyMessage(payload.getString("message_id"), payload.getString("text"))
                     }
+                    experience.current?.let { chat.processing(it.getJSONArray("messages")) }
                     send("sync.ack", JSONObject().put("through", chat.through()))
                 }
-                "chat.accepted" -> chat.accepted(payload)
+                "chat.accepted" -> {
+                    chat.accepted(payload)
+                    experience.current?.let { chat.processing(it.getJSONArray("messages")) }
+                }
+                "engine.state" -> if (experience.receive(payload)) chat.processing(payload.getJSONArray("messages"))
                 "device.command" -> command(payload)
                 "command.query" -> {
                     val id = payload.getString("command_id")
-                    val old = database.records().get("cmd:$id")
-                    val result = if (old != null) JSONObject(old.payload) else JSONObject()
-                        .put("command_id", id).put("state", "unknown").put("error", "device_record_missing")
-                    send("device.result", result)
+                    val epoch = connectionEpoch.get()
+                    // Reconnect can now complete while Android is still waiting. Do not turn its
+                    // provisional journal entry into a terminal unknown receipt merely by querying.
+                    if (!commands.deferQuery(id) {
+                        if (epoch == connectionEpoch.get() && phase == "online") answerCommandQuery(id)
+                    }) answerCommandQuery(id)
                 }
                 "error" -> errorCode = payload.optString("code", "protocol_error")
             }
@@ -283,26 +316,91 @@ class DeviceService : Service() {
             .put("accessibility", PhoneAccessibility.current != null))
     }
 
+    /**
+     * Commit once on the state owner, then release it while Android or upload waits. A command
+     * captures its connection and deadline; later reconnects cannot renew its execution eligibility.
+     */
     private fun command(payload: JSONObject) {
         val id = payload.getString("command_id")
         val old = database.records().get("cmd:$id")
         if (old != null) { send("device.result", JSONObject(old.payload)); return }
         val operation = payload.getString("operation")
         val session = payload.getString("control_session_id")
-        val outcome = JSONObject().put("command_id", id)
+        val epoch = connectionEpoch.get()
+        val config = credentials ?: throw IllegalStateException("not_paired")
+        val network = client ?: throw IllegalStateException("connection_lost")
         val expires = payload.getDouble("expires_at")
+        val serverAnchor = serverTimeAnchor
+        val elapsedAnchor = monotonicAnchor
+        val outcome = JSONObject().put("command_id", id)
         fun guard() {
             check(controlAllowed) { "control_not_allowed" }
-            check(phase == "online" && (operation == "connect" || controlSession == session)) { "control_not_connected" }
-            check(serverTimeAnchor + (SystemClock.elapsedRealtime() - monotonicAnchor) / 1000.0 < expires) { "command_expired" }
+            check(connectionEpoch.get() == epoch && (operation == "connect" || controlSession == session)) { "control_not_connected" }
+            check(serverAnchor + (SystemClock.elapsedRealtime() - elapsedAnchor) / 1000.0 < expires) { "command_expired" }
+        }
+        fun complete(result: JSONObject) {
+            // Forgetting a pairing also forgets its journal. A late result must not resurrect that cache.
+            if (credentials?.getString("device_id") != config.getString("device_id")) return
+            database.records().put(Record("cmd:$id", "result", result.toString(), System.currentTimeMillis()))
+            if (connectionEpoch.get() == epoch && phase == "online") {
+                try { send("device.result", result) }
+                catch (error: IllegalStateException) { socket?.let { lost(it, "connection_lost") } }
+            }
+            changed()
         }
         try {
             guard()
-            // The journal is committed before crossing into Android. An interrupted running entry is never replayed.
             database.records().put(Record("cmd:$id", "running", outcome.put("state", "unknown").toString(), System.currentTimeMillis()))
+            // Session changes remain on their state owner. Disconnect can revoke an in-flight gesture
+            // immediately, even though Android may already have accepted its irreversible effect.
+            if (operation == "connect" || operation == "disconnect") {
+                // Revocation and session creation share this gate, so a UI stop cannot be
+                // overwritten by a connection assignment that passed its earlier guard.
+                synchronized(controlLock) {
+                    guard()
+                    controlSession = if (operation == "connect") session else null
+                }
+                complete(outcome.put("state", "confirmed").put("data", JSONObject().put("connected", operation == "connect")))
+                return
+            }
+            if (!commands.dispatch(id, { performCommand(operation, payload, config, network, ::guard) }, { result ->
+                try { complete(result) }
+                catch (error: SQLiteException) {
+                    // Android may already have acted. A failed journal commit cannot be called success.
+                    socket?.let { lost(it, "storage_unavailable") }
+                    errorCode = "storage_unavailable"; changed()
+                }
+            })) {
+                complete(outcome.put("state", "failed").put("error", "device_busy"))
+            }
+        } catch (error: IllegalStateException) {
+            complete(outcome.put("state", "failed").put("error", error.message))
+        }
+    }
+
+    /** Only read committed command facts; a deferred query returns on the same state owner. */
+    private fun answerCommandQuery(id: String) {
+        try {
+            val old = database.records().get("cmd:$id")
+            val result = if (old != null) JSONObject(old.payload) else JSONObject()
+                .put("command_id", id).put("state", "unknown").put("error", "device_record_missing")
+            send("device.result", result)
+        } catch (error: SQLiteException) { socket?.let { lost(it, "storage_unavailable") } }
+          catch (error: IllegalStateException) { socket?.let { lost(it, "connection_lost") } }
+    }
+
+    /** Android waits borrow captured network resources, never Room or mutable service state. */
+    private fun performCommand(
+        operation: String,
+        payload: JSONObject,
+        config: JSONObject,
+        network: OkHttpClient,
+        guard: () -> Unit,
+    ): JSONObject {
+        val outcome = JSONObject().put("command_id", payload.getString("command_id"))
+        try {
+            guard()
             val data = when (operation) {
-                "connect" -> { controlSession = session; JSONObject().put("connected", true) }
-                "disconnect" -> { controlSession = null; JSONObject().put("connected", false) }
                 "apps" -> {
                     val items = JSONArray()
                     for (info in packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)) {
@@ -319,20 +417,20 @@ class DeviceService : Service() {
                 "screenshot" -> {
                     val accessibility = PhoneAccessibility.current ?: throw IllegalStateException("accessibility_unavailable")
                     guard()
-                    val bytes = accessibility.screenshot(::guard)
+                    val bytes = accessibility.screenshot(guard)
                     val capturedAt = System.currentTimeMillis() / 1000.0
-                    val config = credentials ?: throw IllegalStateException("not_paired")
+                    guard()
                     val request = Request.Builder().url(config.getString("url").toHttpUrl().resolve("/phone/v1/media")!!)
                         .header("Authorization", "Bearer ${config.getString("token")}")
                         .post(bytes.toRequestBody("image/jpeg".toMediaType())).build()
-                    client!!.newCall(request).execute().use { reply ->
+                    network.newCall(request).execute().use { reply ->
                         check(reply.isSuccessful) { "media_upload_failed" }
                         JSONObject(reply.body!!.string()).put("captured_at", capturedAt)
                     }
                 }
                 else -> {
                     val accessibility = PhoneAccessibility.current ?: throw IllegalStateException("accessibility_unavailable")
-                    guard(); accessibility.operate(operation, payload.getJSONObject("arguments"), ::guard)
+                    guard(); accessibility.operate(operation, payload.getJSONObject("arguments"), guard)
                 }
             }
             outcome.put("state", data.optString("state", "confirmed")).put("data", data)
@@ -344,17 +442,30 @@ class DeviceService : Service() {
         }
           catch (error: TimeoutException) { outcome.put("state", "unknown").put("error", "android_timeout") }
           catch (error: IllegalArgumentException) { outcome.put("state", "failed").put("error", error.message) }
+          catch (error: JSONException) { outcome.put("state", "failed").put("error", "invalid_payload") }
           catch (error: IllegalStateException) { outcome.put("state", "failed").put("error", error.message) }
           catch (error: SecurityException) { outcome.put("state", "failed").put("error", "permission_denied") }
           catch (error: IOException) { outcome.put("state", "unknown").put("error", "media_transfer_failed") }
-        database.records().put(Record("cmd:$id", "result", outcome.toString(), System.currentTimeMillis()))
-        send("device.result", outcome)
+        return outcome
     }
 
-    /** Project committed local facts without changing storage, network state or event subscriptions. */
+    /** Save only an explicit navigation choice; this metadata never grants system permission. */
+    private fun saveSetupStep(step: Int) {
+        database.records().put(Record("onboarding", "meta", JSONObject().put("step", step).toString(), 0))
+    }
+
+    /**
+     * Project committed local facts without network work or invalidation. Missing setup metadata
+     * belongs to an existing pairing, which must not be sent through first-run education again.
+     */
     private fun snapshot(): JSONObject {
         return JSONObject().put("paired", credentials != null).put("phase", phase).put("error", errorCode)
             .put("online_wanted", onlineWanted)
+            .put("setup_step", database.records().get("onboarding")?.let { JSONObject(it.payload).getInt("step") } ?: if (credentials != null) 4 else 0)
+            .put("notifications_enabled", androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled())
+            .put("subject_name", experience.name())
+            .put("engine_state_supported", experience.supported)
+            .put("engine_state", experience.current)
             .put("host", credentials?.optString("url")).put("control_allowed", controlAllowed)
             .put("control_connected", controlSession != null).put("accessibility", PhoneAccessibility.current != null)
             .put("messages", chat.messages())
@@ -366,14 +477,26 @@ class DeviceService : Service() {
 
     private fun notifyMessage(identity: String, text: String) {
         getSystemService(NotificationManager::class.java).notify(identity.hashCode(), NotificationCompat.Builder(this, "messages")
-            .setSmallIcon(R.drawable.ic_purrcept).setContentTitle("Purrcept").setContentText(text.take(200))
+            .setSmallIcon(R.drawable.ic_purrcept).setContentTitle(experience.name() ?: "Purrcept").setContentText(text.take(200))
             .setContentIntent(openApp()).setAutoCancel(true).build())
     }
 
+    /** Late OkHttp callbacks may arrive after resource return; only destruction suppresses rejection. */
+    private fun networkEvent(action: () -> Unit) {
+        if (destroyed) return
+        try { worker.execute(action) }
+        catch (error: RejectedExecutionException) { if (!destroyed) throw error }
+    }
+
     override fun onDestroy() {
-        controlAllowed = false; controlSession = null; onChanged = null
-        worker.execute { disconnect(); database.close() }
-        worker.shutdown()
+        destroyed = true
+        synchronized(controlLock) { controlAllowed = false; controlSession = null }
+        onChanged = null
+        worker.execute {
+            disconnect()
+            // Ordering: an accepted Android wait finishes and journals before Room is closed.
+            commands.close { database.close(); worker.shutdown() }
+        }
         super.onDestroy()
     }
 }

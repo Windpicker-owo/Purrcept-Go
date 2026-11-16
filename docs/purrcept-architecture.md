@@ -1,8 +1,8 @@
 # Purrcept Go 架构
 
 主体只在电脑的 Purrcept Engine 中运行。手机是聊天入口和显式授权的设备执行端。
-本仓库继承 dsh-Go 的 Flutter/Android 工程，保留上游源码作迁移参考；新应用
-不链接 dsh_client、dsh_remote、Ubuntu、PRoot、Node 或上游在线服务。
+本仓库继承 dsh-Go 的 Flutter/Android 工程，未接入的上游源码已清理；旧实现
+可从 Git 历史查阅。当前应用不包含 DSH 运行时或上游在线服务。
 
 ## 活跃入口
 
@@ -10,18 +10,25 @@
 |---|---|
 | `app/lib/main.dart`、`app/lib/purrcept/` | Flutter 页面、本地状态投影和中英文文案 |
 | `app/android/app/src/purrcept/` | Kotlin 服务、Room 缓存、Keystore 凭据和 Android 执行 |
+| `app/android/app/src/main/AndroidManifest.xml` | 标准 Flutter/Android 入口清单 |
 | `app/android/app/build.gradle.kts` | 只打包 Purrcept 源集，Android 11+ |
 | `design/purrcept-cel.tokens.json` | 来自 purrcept_design 的固定 Token 输入 |
 | `tooling/export_cel.py` | 生成 Flutter Token 映射 |
 | `app/test/purrcept/` | 当前应用交互测试 |
 
-原有 `app/lib/` 的其他目录及原生 `src/main/` 业务源码不进入当前应用入口或
-构建源集；Flutter 自动生成的 `src/main/java/io/flutter/plugins` 注册器是
-唯一例外。上游测试不作为当前应用验收入口。没有两个可切换的产品模式。
+原有 `app/lib/` 其他目录、原生 `src/main/` 业务源码和旧界面测试已移除。
+Flutter 仍在 `src/main/java/io/flutter/plugins` 生成插件注册器，该生成路径
+保留在构建源集中。当前应用没有 DSH 产品模式。
 
 ## 资源生命周期
 
-DeviceService 的单线程执行器拥有 Room 和唯一 OkHttp WSS。Activity 绑定服务，
+DeviceService 的单线程执行器拥有 Room 和唯一 OkHttp WSS。CommandLane 独占
+有界 Android 等待与图片上传，期间状态查询、聊天收发和撤销仍由原线程推进。
+命令先落盘再跨线程派发，一次只接收一个 Android 操作；重叠调用明确报告
+`device_busy`，不在等待队列中暗中积压。完成回到状态线程落盘，再发送真实回执。
+重连后的旧命令查询若仍在同一次 Android 等待中，会在真实回执落盘后回答；
+查询不提前固化临时 unknown，也不重新派发。关闭时先撤销资格，等待已接受工作
+归还后再关闭 Room。Activity 绑定服务，
 页面只通过 `purrcept/device` 发本地请求，通过事件通道得知需要刷新；事件
 不携带权威聊天正文，UI 总是查询已提交缓存。用户开启设备在线后服务显示
 前台通知，强制停止后不承诺继续在线。进程重启不恢复操控授权。
@@ -35,15 +42,21 @@ DeviceService 的单线程执行器拥有 Room 和唯一 OkHttp WSS。Activity �
 Activity，只返回邀请文字，不保存相机图片。Flutter 对扫码或粘贴结果做有界
 结构校验并展示目标电脑，用户确认后才调用原生配对；成功后自动开启在线。
 原生仍负责 HTTPS 固定证书校验和凭据持久化，扫码不能绕过信任边界。
-电脑端 `tooling/pair_phone.py` 只读 Engine 的现有邀请，经随机端口、随机路径的
-loopback 页面内存展示二维码；不记录访问日志、不缓存响应、不写邀请副本。
-每秒检查源文件，过期或被消费后撤下二维码。Engine 仍拥有邀请与过期资格。
+电脑端配对由 Engine WebUI 直接借用当前 Phone 监听器。Go 不提供电脑端
+配对程序或邀请文件观察器；普通查询不续期，明确点击才生成新的两分钟窗口。
 
 聊天由 ChatJournal 保存 message_id 再发送，重试沿用正文和发生时间。
 chat.accepted 只另存接管回执，不能删除待发正文或移动同步游标；否则同步
 事件迟到时气泡会消失。接收消息、删除对应待发项与回执、推进游标在 Room
 同事务提交后才发确认。事件先于接管回执到达时，忽略迟到回执，不复活待发项。
 界面状态区分手机已保存、Engine 已接管等待同步、已同步；均不证明主脑已读。
+EngineExperience 持有本连接的有限实时状态，断线立即清空，只单独保留公开名字。
+ChatJournal 按确切 input_id 缓存处置版本和最近一次行动摘要，只有确切 turn_id
+才能将单条气泡与实时思考或行动关联。详见通信协议的 engine.state 契约。
+
+首次引导进度由 Room 元数据保存；配对成功进入可跳过的通知与无障碍说明，
+不因配对或开启在线自动申请通知、不自动授权操控。已存在配对且没有引导元数据
+的用户直接进入聊天。忘记配对同时清除引导与名字。
 命令先写 running 再调用 Android；
 旧 running 在进程恢复时转为 unknown，不得再次执行。命令查询只回记录。
 
@@ -61,5 +74,11 @@ chat.accepted 只另存接管回执，不能删除待发正文或移动同步游
 
 ## 本轮尚未接入
 
-连续观察、聊天附件与语音、桌宠、主脑已读回执，以及 Shizuku、
+连续观察、聊天附件与语音、桌宠、主脑主观已读回执，以及 Shizuku、
 ADB 和后台虚拟显示。旧实现仅是后续移植参考，不应直接恢复其 DSH 通信。
+
+## 电脑端设置与配对
+
+设置与二维码统一位于 Engine WebUI 的设备页。设置只编辑 CLI 的当前配置，
+先预览再保存并备份；插件和监听配置在正常重启后生效。二维码从运行中 Phone
+插件的独立本机配对端口取得，过期可以直接刷新，不再依赖 Go 的工具或 Tk 窗口。

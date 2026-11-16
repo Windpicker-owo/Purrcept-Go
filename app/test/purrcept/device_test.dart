@@ -41,6 +41,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Offline'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'Hello');
+      await tester.pump();
       await tester.tap(find.byTooltip('Send'));
       await tester.pumpAndSettle();
       final sends = calls.where((call) => call.method == 'send').toList();
@@ -63,6 +64,7 @@ void main() {
     await tester.pumpWidget(const PurrceptApp());
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Keep this');
+    await tester.pump();
     await tester.tap(find.byTooltip('Send'));
     await tester.pumpAndSettle();
     expect(
@@ -105,9 +107,14 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
+      expect(find.text('Synced to this phone'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Hello'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Hello'), findsOneWidget);
       expect(find.text('Accepted by Engine'), findsOneWidget);
-      expect(find.text('Synced to this phone'), findsOneWidget);
       expect(find.text('Engine accepted · awaiting sync'), findsNothing);
     },
   );
@@ -184,6 +191,46 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a short action retains its real receipt without a fake busy state',
+    (tester) async {
+      snapshot.addAll({
+        'phase': 'online',
+        'subject_name': 'Mimi',
+        'engine_state_supported': true,
+        'engine_state': {
+          'host_phase': 'running',
+          'activity': {'phase': 'idle'},
+          'messages': [],
+        },
+        'messages': [
+          {
+            'message_id': 'm1',
+            'direction': 'incoming',
+            'text': 'Read the screen',
+            'delivery_state': 'synced',
+            'processing': {
+              'stage': 'processed',
+              'reason': 'done',
+              'last_action': {'path': 'me.phone.screen', 'state': 'confirmed'},
+            },
+          },
+        ],
+      });
+      await tester.pumpWidget(const PurrceptApp());
+      await tester.pumpAndSettle();
+      expect(find.text('Mimi'), findsWidgets);
+      expect(find.text('Thinking'), findsNothing);
+      await tester.tap(find.text('This turn has finished'));
+      await tester.pumpAndSettle();
+      expect(find.text('Execution receipt confirmed'), findsOneWidget);
+      expect(find.text('Phone operation'), findsOneWidget);
+      expect(find.text('Working with the phone'), findsNothing);
+      expect(find.textContaining('does not guarantee'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
   String fakeInvitation() => jsonEncode({
     'v': 1,
     'url': 'https://192.0.2.1:8766',
@@ -195,7 +242,12 @@ void main() {
   testWidgets(
     'scanning reviews the computer before pairing and connecting without control',
     (tester) async {
-      snapshot = {'paired': false, 'phase': 'offline', 'messages': <Object?>[]};
+      snapshot = {
+        'paired': false,
+        'setup_step': 2,
+        'phase': 'offline',
+        'messages': <Object?>[],
+      };
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(DeviceController.channel, (call) async {
             calls.add(call);
@@ -235,6 +287,7 @@ void main() {
     tester,
   ) async {
     snapshot['paired'] = false;
+    snapshot['setup_step'] = 2;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(DeviceController.channel, (call) async {
           calls.add(call);
@@ -258,6 +311,7 @@ void main() {
     tester,
   ) async {
     snapshot['paired'] = false;
+    snapshot['setup_step'] = 2;
     String? scanned;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(DeviceController.channel, (call) async {
@@ -281,10 +335,54 @@ void main() {
     );
   });
 
+  for (final entry in <String, String>{
+    'certificate_date_invalid': 'Certificate date validation failed.',
+    'certificate_mismatch': 'The computer certificate does not match the QR.',
+    'network_permission_denied':
+        'The system blocked this app’s network access.',
+    'pairing_network_error':
+        'The computer connection failed before pairing completed.',
+  }.entries) {
+    testWidgets('pairing reports ${entry.key} without claiming chat delivery', (
+      tester,
+    ) async {
+      snapshot['paired'] = false;
+      snapshot['setup_step'] = 2;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(DeviceController.channel, (call) async {
+            calls.add(call);
+            if (call.method == 'snapshot') return jsonEncode(snapshot);
+            if (call.method == 'scan') return fakeInvitation();
+            throw PlatformException(
+              code: entry.key,
+              details: entry.key == 'certificate_date_invalid'
+                  ? 'SSLHandshakeException → CertificateNotYetValidException'
+                  : null,
+            );
+          });
+      await tester.pumpWidget(const PurrceptApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scan to pair'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pair and connect'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining(entry.value), findsOneWidget);
+      if (entry.key == 'certificate_date_invalid') {
+        expect(find.text('Copy connection error details'), findsOneWidget);
+      }
+      expect(
+        find.textContaining('Saved messages will synchronize'),
+        findsNothing,
+      );
+      expect(calls.any((call) => call.method == 'online'), isFalse);
+    });
+  }
+
   testWidgets('rejected pairing does not start the online service', (
     tester,
   ) async {
     snapshot['paired'] = false;
+    snapshot['setup_step'] = 2;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(DeviceController.channel, (call) async {
           calls.add(call);
@@ -306,6 +404,7 @@ void main() {
     'manual invitation remains available without opening the camera',
     (tester) async {
       snapshot['paired'] = false;
+      snapshot['setup_step'] = 2;
       await tester.pumpWidget(const PurrceptApp());
       await tester.pumpAndSettle();
       await tester.tap(find.text('Other option: paste an invitation'));

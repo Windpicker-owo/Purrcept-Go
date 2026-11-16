@@ -81,3 +81,39 @@ reconnecting/offline` 的网络事实分开。重连期间可以关闭设备在�
 `frame_replaced`、`tree_changed`、`window_changed`、`window_scrolled`、
 `operation_accepted`、`service_interrupted` 和 `service_stopped`；只记录
 失效原因，不附带界面正文。这些诊断不改变失败状态或允许自动重试。
+
+## 主体名字与真实进度
+
+`welcome.payload.features` 包含 `engine_state` 时，服务端独立发送
+`engine.state`。缺少此特性只表示实时进度未提供，手机仍可聊天，不从网络在线
+推断主脑正在思考。状态帧可以与接管回执、同步事件交错，消费者不能依赖帧序号位置。
+
+```json
+{"revision":1,"observed_at":1794770000.0,"subject_name":"小白","host_phase":"running","activity":{"phase":"thinking","turn_id":"turn-id","started_at":1794769999.0},"messages":[{"message_id":"message-id","input_id":"input-id","version":4,"stage":"processing","reason":"foreground","admitted_at":1794769998.0,"turn_id":"turn-id","turn_state":"running","last_action":{"path":"me.phone.screen","state":"confirmed"}}]}
+```
+
+`revision` 只在本连接的公开事实变化后增加，重连从头开始；`observed_at` 是
+本次采样时间，不能据其耗时推进阶段。状态不占用聊天 `seq`，不确认、不补送。
+手机断线立即清除实时活动，但可以保留已验证的主体名字与每条消息的处置记录。
+名字来自 Engine 当前角色配置，只传最多120个字符的公开名字。
+
+`host_phase` 明确区分 new/starting/running/closing/closed/failed。
+`activity.phase` 为 idle/processing/thinking/acting：只有实际运行中的逻辑模型
+请求才能标为 thinking；acting 来自当前前台轮次输入所关联的运行中行动，
+可附实际在途的 `call_path`。全局活动可能源于 QQ 等其他输入，不能归给每条手机
+消息。气泡只有通过相同 `turn_id` 才能与当前思考或行动关联。
+
+`messages` 至多包含本设备最近24条入站消息的输入版本、阶段、原因和确切轮次
+身份。不返回提示、思维正文、行动源码、参数或回执正文。processed 只表示本次
+处理结束；`subject.sleeping.recorded` 明确仅记历史；failed 不伪装成完成或回复。
+`last_action` 可附此输入最近一次真实派发的能力路径和当前回执阶段
+started/confirmed/failed/unknown。手机可在消息进度详情查看它；confirmed 是
+执行边界的确认，不能保证第三方应用的业务效果。
+
+轮询仅观察已提交事实，空闲约每秒一次，活动期间约每250毫秒一次。很短的
+阶段可能在两次采样间结束，不保证播放每个动作。最近回执仍可查询，界面不靠
+延迟清除状态制造“正在执行”。旧消息处置缓存不是完整行动历史或已读凭证。
+
+超出当前输入报告的非终态缓存显示“当前进度未提供”，不能无限保留“已接手”的
+实时含义。终态缓存仍是已确认的过去事实；若消息关联的确切 turn_id 仍由当前
+实时活动持有，即使消息不在最近窗口中，也可以继续关联真实思考或执行。

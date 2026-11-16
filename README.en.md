@@ -16,6 +16,8 @@ and can connect to the authorized phone to read its screen and perform operation
 - Screen structure, screenshots, element taps, text input, scrolling, app launch and navigation keys.
 - Journaled commands; uncertain operations are never automatically repeated.
 - Chat distinguishes local persistence, Engine admission and synchronization. Offline messages replay automatically; early admission receipts keep the bubble visible.
+- Engine supplies the subject name and actual processing, thought and action stages. Tap message status to inspect its last associated execution receipt.
+- Resumable first-run guidance, system dark mode, large text, reduced motion and Purrcept’s own state-driven white cat.
 
 This is a development implementation. Continuous observation, chat attachments,
 voice, pets and agent read receipts are not connected yet. Android
@@ -23,27 +25,16 @@ permissions, background behavior and actual operations still require test-device
 
 ## Connect
 
-Install the `phone` extra in the sibling `purrcept_engine` repository and follow
-its `docs/phone.md` to generate TLS files and enable the Phone plugin. Start Engine
-with pairing enabled, then run this command from this repository's root:
+Computer-side setup lives in **Engine WebUI → Devices → Connect Android phone**.
 
-```sh
-uv run tooling/pair_phone.py
-```
+1. If Phone is not enabled, open its connection settings, choose the computer address and port, preview and save.
+2. Restart Engine normally to apply plugin or listener changes. Configuration is backed up and existing certificates are retained.
+3. Select Show pairing QR code. Follow the phone’s guide to scan, review the computer and connect.
+4. Refresh an expired QR directly in WebUI, without restarting Engine. An already paired phone can connect directly.
 
-A local browser window displays the QR code. Tap **Scan to pair** on the phone,
-review the computer address and certificate fingerprint, then **Pair and connect**.
-No manual JSON entry is needed. Camera permission is requested only for scanning;
-cancelling the scan or review performs no pairing. Scanning needs no Google Play
-services. Chat requires neither accessibility nor device-control authorization,
-and pairing does not grant either permission.
-
-The tool reads the sibling `purrcept_engine/.purrcept/phone-invitation.json` by
-default. Override with `--invitation <path>`. Invitations last 120 seconds; reopen
-Engine's pairing window after expiry. The display follows file changes and removes
-expired or consumed invitations. It only reads existing invitations, without
-starting or changing Engine. Keep it running until finished, then press Ctrl+C.
-If scanning is unavailable, expand **Other option: paste an invitation** on the phone.
+Go owns only the phone-side scanner and connection. No desktop Go program or manual JSON is required.
+See the sibling [Engine phone guide](../purrcept_engine/docs/phone.md). Scanning needs no Google Play;
+chat needs neither accessibility nor device control, and pairing does not grant control permission.
 
 ## Build
 
@@ -74,13 +65,10 @@ requires installing and testing the updated APK.
 
 Purrcept Cel tokens are frozen from Purrcept Design. Run `python tooling/export_cel.py`
 to regenerate their Flutter mapping and add `--check` to verify it.
-Test the local pairing display with
-`uv run --with qrcode==8.2 python -m unittest discover -s tooling -p test_pair_phone.py -v`.
 
 Active Dart sources are `app/lib/purrcept/`; Android sources are selected from
-`app/android/app/src/purrcept/`. Upstream DSH sources remain porting references,
-outside active dependencies and source sets. The new app does not enable the old
-runtime, market, sharing or analytics services.
+`app/android/app/src/purrcept/`. Unused DSH sources, models, runtimes, SDKs, sites and old UI images have been
+removed. Git history retains upstream implementations; licensing notices remain here.
 
 ## Attribution and license
 

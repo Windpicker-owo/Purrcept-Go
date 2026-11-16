@@ -5,9 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'device.dart';
+import 'activity.dart';
+import 'experience.dart';
 import 'l10n/app_localizations.dart';
+import 'mobile_theme.dart';
 import 'pairing.dart';
+import 'onboarding.dart';
 import 'tokens.dart';
+import 'press_feedback.dart';
 
 class PurrceptApp extends StatelessWidget {
   const PurrceptApp({super.key});
@@ -18,30 +23,8 @@ class PurrceptApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     localizationsDelegates: PhoneL10n.localizationsDelegates,
     supportedLocales: PhoneL10n.supportedLocales,
-    theme: ThemeData(
-      useMaterial3: true,
-      colorScheme: const ColorScheme.light(
-        primary: Cel.brand,
-        onPrimary: Cel.onBrand,
-        surface: Cel.surface,
-        onSurface: Cel.ink,
-        error: Cel.failed,
-      ),
-      scaffoldBackgroundColor: Cel.canvas,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Cel.canvas,
-        foregroundColor: Cel.ink,
-        elevation: 0,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Cel.sunken,
-        border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(Cel.radius),
-        ),
-      ),
-    ),
+    theme: phoneTheme(Brightness.light),
+    darkTheme: phoneTheme(Brightness.dark),
     home: const DeviceHome(),
   );
 }
@@ -57,6 +40,8 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
   final composer = TextEditingController();
   final invitation = TextEditingController();
   int page = 0;
+  final seenMessages = <String>{};
+  bool hasOpenedChat = false;
 
   @override
   void initState() {
@@ -86,19 +71,36 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
       animation: device,
       builder: (context, _) => Scaffold(
         appBar: AppBar(
-          title: const Text('Purrcept'),
+          toolbarHeight:
+              MediaQuery.textScalerOf(context).scale(MobileTokens.titleSize) +
+                      Cel.space >
+                  kToolbarHeight
+              ? MediaQuery.textScalerOf(context).scale(MobileTokens.titleSize) +
+                    Cel.space
+              : kToolbarHeight,
+          title: Text(
+            device.paired
+                ? device.experience.name ?? text.companionFallback
+                : 'Purrcept Go',
+            style: Theme.of(context).textTheme.headlineMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Cel.space),
-              child: Center(
-                child: Text(
-                  connectionLabel(text),
-                  style: TextStyle(
-                    color: device.online ? Cel.active : Cel.muted,
+            if (device.loaded && device.paired)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Cel.space),
+                child: Center(
+                  child: Text(
+                    connectionLabel(text),
+                    style: TextStyle(
+                      color: device.online
+                          ? PhoneColors.of(context).active
+                          : PhoneColors.of(context).muted,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
         body: SafeArea(
@@ -109,15 +111,41 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
                   padding: const EdgeInsets.all(Cel.space),
                   child: Semantics(
                     liveRegion: true,
-                    child: Text(
-                      errorDescription(text, device.error!),
-                      style: const TextStyle(color: Cel.failed),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          errorDescription(text, device.error!),
+                          style: TextStyle(
+                            color: PhoneColors.of(context).failed,
+                          ),
+                        ),
+                        if (device.requestDiagnostics != null)
+                          TextButton(
+                            onPressed: () => Clipboard.setData(
+                              ClipboardData(
+                                text:
+                                    '${device.error}\n${device.requestDiagnostics}',
+                              ),
+                            ),
+                            child: Text(text.copyConnectionError),
+                          ),
+                      ],
                     ),
                   ),
                 ),
               Expanded(
-                child: !device.paired
-                    ? pairing(text)
+                child: !device.loaded
+                    ? Center(
+                        child: device.error == null
+                            ? const CircularProgressIndicator()
+                            : FilledButton(
+                                onPressed: device.refresh,
+                                child: Text(text.setupRetry),
+                              ),
+                      )
+                    : !device.paired || device.setupStep < 4
+                    ? PhoneSetup(device: device, pairing: pairing(text))
                     : page == 0
                     ? chat(text)
                     : controls(text),
@@ -125,20 +153,26 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
             ],
           ),
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: page,
-          onDestinationSelected: (index) => setState(() => page = index),
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: text.chat,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.phone_android),
-              label: text.device,
-            ),
-          ],
-        ),
+        bottomNavigationBar:
+            !device.loaded || !device.paired || device.setupStep < 4
+            ? null
+            : NavigationBar(
+                selectedIndex: page,
+                onDestinationSelected: (index) {
+                  HapticFeedback.selectionClick();
+                  setState(() => page = index);
+                },
+                destinations: [
+                  NavigationDestination(
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: text.chat,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.phone_android),
+                    label: text.device,
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -156,6 +190,14 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
     'connection_lost' ||
     'connection_closed' ||
     'network_error' => text.networkError,
+    'pairing_network_error' => text.pairingNetworkError,
+    'network_timeout' => text.networkTimeoutError,
+    'computer_unreachable' => text.computerUnreachableError,
+    'computer_not_found' => text.computerNotFoundError,
+    'network_permission_denied' => text.networkPermissionError,
+    'certificate_date_invalid' => text.certificateDateError,
+    'certificate_mismatch' => text.certificateMismatchError,
+    'tls_connection_failed' => text.tlsConnectionError,
     'authentication_rejected' => text.authenticationError,
     'invalid_protocol' ||
     'unsupported_protocol' ||
@@ -174,77 +216,62 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
     _ => text.requestFailed(code),
   };
 
-  Widget pairing(PhoneL10n text) => Center(
-    child: SingleChildScrollView(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: Cel.contentMax),
-        child: Padding(
-          padding: const EdgeInsets.all(Cel.space * 2),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+  /// Camera and manual entry share the same review boundary, inside the setup's scroll surface.
+  Widget pairing(PhoneL10n text) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      FilledButton.icon(
+        onPressed: device.busy
+            ? null
+            : () async {
+                final raw = await device.scanInvitation();
+                if (raw != null && mounted) await reviewInvitation(raw);
+              },
+        icon: const Icon(Icons.qr_code_scanner),
+        label: Text(text.scanPair),
+      ),
+      const SizedBox(height: Cel.space),
+      Text(text.scanDescription),
+      const SizedBox(height: Cel.space),
+      ExpansionTile(
+        title: Text(text.manualPairing),
+        tilePadding: EdgeInsets.zero,
+        children: [
+          TextField(
+            controller: invitation,
+            maxLines: 5,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: InputDecoration(labelText: text.invitation),
+          ),
+          const SizedBox(height: Cel.space),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: Cel.space,
             children: [
-              Text(
-                text.pairTitle,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: Cel.space),
-              Text(text.pairDescription),
-              const SizedBox(height: Cel.space * 2),
-              FilledButton.icon(
+              TextButton.icon(
                 onPressed: device.busy
                     ? null
                     : () async {
-                        final raw = await device.scanInvitation();
-                        if (raw != null && mounted) await reviewInvitation(raw);
+                        final data = await Clipboard.getData(
+                          Clipboard.kTextPlain,
+                        );
+                        if (mounted) invitation.text = data?.text ?? '';
                       },
-                icon: const Icon(Icons.qr_code_scanner),
-                label: Text(text.scanPair),
+                icon: const Icon(Icons.content_paste),
+                label: Text(text.pasteInvitation),
               ),
-              const SizedBox(height: Cel.space),
-              Text(text.scanDescription),
-              const SizedBox(height: Cel.space),
-              ExpansionTile(
-                title: Text(text.manualPairing),
-                tilePadding: EdgeInsets.zero,
-                children: [
-                  TextField(
-                    controller: invitation,
-                    maxLines: 5,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    decoration: InputDecoration(labelText: text.invitation),
-                  ),
-                  const SizedBox(height: Cel.space),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: device.busy
-                            ? null
-                            : () async {
-                                final data = await Clipboard.getData(
-                                  Clipboard.kTextPlain,
-                                );
-                                if (mounted) invitation.text = data?.text ?? '';
-                              },
-                        icon: const Icon(Icons.content_paste),
-                        label: Text(text.pasteInvitation),
-                      ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: device.busy
-                            ? null
-                            : () => reviewInvitation(invitation.text),
-                        child: Text(text.pair),
-                      ),
-                    ],
-                  ),
-                ],
+              FilledButton(
+                onPressed: device.busy
+                    ? null
+                    : () => reviewInvitation(invitation.text),
+                child: Text(text.pair),
               ),
             ],
           ),
-        ),
+        ],
       ),
-    ),
+    ],
   );
 
   /// Review an untrusted scan or clipboard payload before pairing. Only successful native admission
@@ -276,7 +303,7 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
               Text(text.certificateFingerprint),
               SelectableText(
                 parsed.fingerprint,
-                style: const TextStyle(color: Cel.muted),
+                style: TextStyle(color: PhoneColors.of(context).muted),
               ),
             ],
           ),
@@ -304,122 +331,290 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
     }
   }
 
+  /// Conversation stays readable on wide screens, while the live body remains beside the composer.
   Widget chat(PhoneL10n text) {
     final messages = device.messages;
-    return Column(
-      children: [
-        if (!device.online)
-          Padding(
-            padding: const EdgeInsets.all(Cel.space),
-            child: Row(
+    final experience = device.experience;
+    final arrivals = <String>{};
+    for (final message in messages) {
+      final id = message['message_id'] as String? ?? '';
+      if (hasOpenedChat && !seenMessages.contains(id)) arrivals.add(id);
+      seenMessages.add(id);
+    }
+    hasOpenedChat = true;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: MobileTokens.contentMax),
+        child: Column(
+          children: [
+            if (!device.online)
+              Padding(
+                padding: const EdgeInsets.all(Cel.space),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        device.onlineWanted
+                            ? text.connectingHint
+                            : text.offlineHint,
+                      ),
+                    ),
+                    const SizedBox(width: Cel.space),
+                    FilledButton(
+                      onPressed: device.busy
+                          ? null
+                          : () => device.invoke('online'),
+                      child: Text(
+                        device.onlineWanted ? text.reconnect : text.connect,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: messages.isEmpty
+                  ? Center(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(Cel.space * 1.5),
+                          child: CompanionPresence(
+                            experience: experience,
+                            hero: true,
+                          ),
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      padding: const EdgeInsets.all(Cel.space),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[messages.length - 1 - index];
+                        return MessageArrival(
+                          key: ValueKey(
+                            '${message['direction']}:${message['message_id']}',
+                          ),
+                          animate: arrivals.contains(message['message_id']),
+                          child: messageBubble(message, experience, text),
+                        );
+                      },
+                    ),
+            ),
+            if (messages.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Cel.space),
+                child: CompanionPresence(experience: experience),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(Cel.space),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: composer,
+                      minLines: 1,
+                      maxLines: 5,
+                      decoration: InputDecoration(hintText: text.messageHint),
+                    ),
+                  ),
+                  const SizedBox(width: Cel.space / 2),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: composer,
+                    builder: (context, value, _) {
+                      final canSend =
+                          !device.busy && value.text.trim().isNotEmpty;
+                      return PressFeedback(
+                        enabled: canSend,
+                        child: IconButton.filled(
+                          tooltip: text.send,
+                          style: IconButton.styleFrom(
+                            minimumSize: const Size(52, 52),
+                          ),
+                          onPressed: !canSend
+                              ? null
+                              : () async {
+                                  final value = composer.text;
+                                  if (value.trim().isNotEmpty &&
+                                      await device.invoke('send', {
+                                        'text': value,
+                                      }) &&
+                                      mounted &&
+                                      composer.text == value) {
+                                    composer.clear();
+                                    HapticFeedback.lightImpact();
+                                  }
+                                },
+                          icon: const Icon(Icons.arrow_upward_rounded),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Stage feedback belongs to its own bubble. Completion is never rendered as an implied reply.
+  Widget messageBubble(
+    Map<String, dynamic> message,
+    SubjectExperience experience,
+    PhoneL10n text,
+  ) {
+    final colors = PhoneColors.of(context);
+    final fromUser = message['direction'] == 'incoming';
+    final phase = messagePhase(message, experience);
+    final label = !fromUser
+        ? text.receivedOnPhone
+        : message['delivery_state'] == 'accepted' &&
+              message['processing'] == null
+        ? text.acceptedPending
+        : messageLabel(phase, text);
+    final color = phase == MessagePhase.failed
+        ? colors.failed
+        : phase == MessagePhase.saved || phase == MessagePhase.waiting
+        ? colors.waiting
+        : colors.muted;
+    return Align(
+      alignment: fromUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: MobileTokens.contentMax),
+        margin: const EdgeInsets.only(bottom: Cel.space),
+        padding: const EdgeInsets.all(Cel.space),
+        decoration: BoxDecoration(
+          color: fromUser ? colors.hero : colors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(MobileTokens.bubbleRadius),
+            topRight: const Radius.circular(MobileTokens.bubbleRadius),
+            bottomLeft: Radius.circular(
+              fromUser ? MobileTokens.bubbleRadius : Cel.space / 2,
+            ),
+            bottomRight: Radius.circular(
+              fromUser ? Cel.space / 2 : MobileTokens.bubbleRadius,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              fromUser ? text.you : experience.name ?? text.companionFallback,
+              style: TextStyle(
+                color: colors.muted,
+                fontSize: MobileTokens.labelSize,
+              ),
+            ),
+            const SizedBox(height: Cel.space / 2),
+            SelectableText(
+              message['text'] as String? ?? '',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: Cel.space / 2),
+            Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Cel.space / 2),
+                onTap: fromUser
+                    ? () => showMessageProgress(message, experience, text)
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Cel.space / 2),
+                  child: Semantics(
+                    button: fromUser,
+                    label: fromUser ? text.messageDetails : null,
+                    child: AnimatedSwitcher(
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : MobileTokens.effects,
+                      child: Row(
+                        key: ValueKey(label),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: color,
+                                fontSize: MobileTokens.labelSize,
+                              ),
+                            ),
+                          ),
+                          if (fromUser) ...[
+                            const SizedBox(width: Cel.space / 2),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              size: MobileTokens.labelSize,
+                              color: color,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Freeze this observation for inspection; a short action is explained by its recorded receipt,
+  /// without keeping the live mascot artificially busy after execution has ended.
+  Future<void> showMessageProgress(
+    Map<String, dynamic> message,
+    SubjectExperience experience,
+    PhoneL10n text,
+  ) {
+    final raw = message['processing'];
+    final action = raw is Map ? raw['last_action'] : null;
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(Cel.space * 1.5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    device.onlineWanted
-                        ? text.connectingHint
-                        : text.offlineHint,
-                  ),
+                Text(
+                  text.messageDetails,
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                FilledButton(
-                  onPressed: device.busy ? null : () => device.invoke('online'),
-                  child: Text(
-                    device.onlineWanted ? text.reconnect : text.connect,
+                const SizedBox(height: Cel.space),
+                Text(messageLabel(messagePhase(message, experience), text)),
+                if (messagePhase(message, experience) ==
+                    MessagePhase.unavailable) ...[
+                  const SizedBox(height: Cel.space),
+                  Text(text.messageProgressUnavailableDetail),
+                ],
+                const SizedBox(height: Cel.space),
+                if (action is Map) ...[
+                  Text(
+                    text.recentAction,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
+                  const SizedBox(height: Cel.space / 2),
+                  Text(actionName(action['path'] as String?, text)),
+                  Text(receiptLabel(action['state'] as String?, text)),
+                  const SizedBox(height: Cel.space),
+                  Text(text.receiptExplanation),
+                ] else
+                  Text(text.noAssociatedAction),
+                const SizedBox(height: Cel.space),
+                Text(text.statusNotReply),
               ],
             ),
           ),
-        Expanded(
-          child: messages.isEmpty
-              ? Center(child: Text(text.emptyChat))
-              : ListView.builder(
-                  // Reverse order starts at the newest bubble without forcing a reader back down
-                  // whenever an older message is being inspected.
-                  reverse: true,
-                  padding: const EdgeInsets.all(Cel.space),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[messages.length - 1 - index];
-                    final fromUser = message['direction'] == 'incoming';
-                    return Align(
-                      alignment: fromUser
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          maxWidth: Cel.contentMax,
-                        ),
-                        margin: const EdgeInsets.only(bottom: Cel.space),
-                        padding: const EdgeInsets.all(Cel.space),
-                        decoration: BoxDecoration(
-                          color: fromUser ? Cel.sunken : Cel.surface,
-                          borderRadius: BorderRadius.circular(Cel.radius),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              fromUser ? text.you : 'Purrcept',
-                              style: const TextStyle(color: Cel.muted),
-                            ),
-                            const SizedBox(height: Cel.space / 2),
-                            SelectableText(message['text'] as String? ?? ''),
-                            const SizedBox(height: Cel.space / 2),
-                            Text(
-                              switch (message['delivery_state']) {
-                                'pending' => text.pending,
-                                'accepted' => text.acceptedPending,
-                                _ =>
-                                  fromUser
-                                      ? text.engineAccepted
-                                      : text.receivedOnPhone,
-                              },
-                              style: TextStyle(
-                                color: message['delivery_state'] == 'pending'
-                                    ? Cel.waiting
-                                    : Cel.muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(Cel.space),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: composer,
-                  minLines: 1,
-                  maxLines: 5,
-                  decoration: InputDecoration(hintText: text.messageHint),
-                ),
-              ),
-              const SizedBox(width: Cel.space),
-              IconButton.filled(
-                tooltip: text.send,
-                onPressed: device.busy
-                    ? null
-                    : () async {
-                        final value = composer.text;
-                        if (value.trim().isNotEmpty &&
-                            await device.invoke('send', {'text': value}) &&
-                            mounted &&
-                            composer.text == value) {
-                          composer.clear();
-                        }
-                      },
-                icon: const Icon(Icons.arrow_upward),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -435,6 +630,16 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
         subtitle: Text(text.onlineDescription),
         value: device.onlineWanted,
         onChanged: (value) => device.invoke(value ? 'online' : 'offline'),
+      ),
+      ListTile(
+        title: Text(text.setupNotifications),
+        subtitle: Text(
+          device.snapshot['notifications_enabled'] == true
+              ? text.enabled
+              : text.disabled,
+        ),
+        trailing: const Icon(Icons.open_in_new),
+        onTap: () => device.invoke('notifications'),
       ),
       SwitchListTile(
         title: Text(text.allowControl),
@@ -493,7 +698,7 @@ class _DeviceHomeState extends State<DeviceHome> with WidgetsBindingObserver {
         onTap: () =>
             showLicensePage(context: context, applicationName: 'Purrcept Go'),
       ),
-      Text(text.about, style: const TextStyle(color: Cel.muted)),
+      Text(text.about, style: TextStyle(color: PhoneColors.of(context).muted)),
     ],
   );
 }

@@ -1,8 +1,12 @@
 # 第三方声明（Third-Party Notices）
 
+当前工作树已清理未接入的 DSH 代码、素材和运行时。下列上游声明继续保留，
+其中旧源码路径和分发组件可在 Git 历史中查阅；当前实际依赖以 Flutter 锁文件
+与 Android Gradle 声明为准。Gradle Wrapper 作为构建工具保留，遵循 Apache-2.0。
+
 本文件集中列出 dsh-go 复制或改写进源码的第三方代码与素材，以及随 App 一起分发的字体、原生库和 Linux 运行时组件。源文件头用 `SPDX-FileCopyrightText` / `SPDX-License-Identifier` 标记版权与许可，并指向本文件；各项目的派生关系见各条目。
 
-- App 内「设置 › 开源许可」页随 APK 分发同样的声明（`app/lib/ui/common/third_party_licenses.dart`，字体在 `app/lib/ui/settings/font_licenses.dart`）。
+- 当前 App 的「设备 › 开源许可」展示 Flutter 许可与扫码依赖许可。旧 DSH 许可页和字体路径已移除，相关来源声明仍保留在下文。
 - Dart / Flutter 依赖应按 `app/pubspec.lock`（以及本地包的 lock）核对直接与传递依赖；Flutter 从包根 `LICENSE` 收集许可并显示在许可证页。这里不逐包重复，发行前仍须核验实际 APK 的许可资产，不能仅凭依赖声明认定已收录。
 - 许可证全文见文末「许可证全文」。
 - 本项目自己的许可见 `LICENSE`（AGPL-3.0）；品牌标识和吉祥物美术不属于第三方，也不在 AGPL 授权范围内，见 `ASSETS.md`。
@@ -16,7 +20,7 @@ Purrcept 原生源集通过 Maven 引入 ZXing Android Embedded 4.3.0
 （https://github.com/zxing/zxing），用于本机相机扫码，不依赖外部扫码服务。
 两者采用 Apache-2.0；相关许可与 ZXing NOTICE 随 APK 打包在
 `app/assets/purrcept/qr_licenses.txt`，可在当前「设备 › 开源许可」中阅读。
-电脑二维码工具的 qrcode 8.2 由 uv 安装，不复制进源码或 APK。
+电脑二维码由 Engine WebUI 生成，Go 不再包含电脑端二维码工具。
 
 ### Phase（MIT，作者授权）
 

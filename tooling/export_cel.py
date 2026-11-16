@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def render(tokens: dict) -> str:
-    """仅映射当前设备界面实际使用的 Token，不另立视觉数值。"""
+    """映射共享 Cel 快照及明确声明的移动端扩展，不在生成器内另立视觉数值。"""
     colors = {
         "brand": "brand", "onBrand": "on-brand", "surface": "surface", "sunken": "surface-sunken",
         "canvas": "canvas", "ink": "ink", "muted": "ink-muted", "active": "active",
@@ -18,11 +18,19 @@ def render(tokens: dict) -> str:
         lines.append(f"  static const {name} = Color(0xFF{tokens['colors'][key][1:]});")
     for name, group, key in (("radius", "rounded", "md"), ("space", "spacing", "md"), ("contentMax", "spacing", "content-max")):
         lines.append(f"  static const {name} = {float(tokens[group][key].removesuffix('px'))};")
+    lines.extend(["}", "", "/// Mobile-specific shapes, anatomy and motion; see docs/mobile-experience.md.", "abstract final class MobileTokens {"])
+    mobile = tokens["mobile"]
+    for name, color in mobile["colors"].items():
+        lines.append(f"  static const {name} = Color(0xFF{color[1:]});")
+    for name, number in mobile["metrics"].items():
+        lines.append(f"  static const {name} = {float(number)};")
+    for name, milliseconds in mobile["durations"].items():
+        lines.append(f"  static const {name} = Duration(milliseconds: {milliseconds});")
     return "\n".join([*lines, "}", ""])
 
 
 def main() -> None:
-    """生成或检查 Dart Token，输入快照从同级设计仓库的 dist 固定。"""
+    """生成或检查 Dart Token；共享快照与本仓库的 mobile 扩展共同作为输入。"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()

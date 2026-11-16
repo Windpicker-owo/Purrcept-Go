@@ -47,11 +47,11 @@ class PhoneEvalTest(unittest.TestCase):
                 self.assertEqual(sum(c["category"] == category and c["partition"] == split for c in self.cases.values()), 2)
 
     def test_family_cannot_cross_tuning_and_holdout(self):
-        data = json.loads(ev.DEFAULT_CASES.read_text())
+        data = json.loads(ev.DEFAULT_CASES.read_text(encoding="utf-8"))
         data["cases"][2]["family"] = data["cases"][0]["family"]
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "cases.json"
-            path.write_text(json.dumps(data))
+            path.write_text(json.dumps(data), encoding="utf-8")
             with self.assertRaisesRegex(ev.Invalid, "family_crosses_partition"):
                 ev.load_cases(path)
 

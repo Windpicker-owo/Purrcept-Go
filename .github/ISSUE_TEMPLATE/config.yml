@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: 先翻一眼 README
-    url: https://github.com/ccch1mneyyy/dsh-Go#readme
-    about: 安装、本机引擎、手机操控、远程主机这几块，README 和 docs/architecture.md 里基本都有
+    url: https://github.com/Windpicker-owo/Purrcept-Go#readme
+    about: 安卓安装、Engine WebUI 配对和手机操控请先阅读 README 与 docs/purrcept-architecture.md

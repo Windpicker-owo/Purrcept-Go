@@ -86,8 +86,7 @@ class PhoneL10nEn extends PhoneL10n {
       'Messages will synchronize when your Engine is connected.';
 
   @override
-  String get emptyChat =>
-      'Say something to Purrcept. She can message you here too.';
+  String get emptyChat => 'A place to pick up the conversation.';
 
   @override
   String get you => 'You';
@@ -96,7 +95,7 @@ class PhoneL10nEn extends PhoneL10n {
   String get pending => 'Saved on phone · waiting for Engine';
 
   @override
-  String get messageHint => 'Message Purrcept';
+  String get messageHint => 'A thought, a question, your day…';
 
   @override
   String get send => 'Send';
@@ -223,4 +222,312 @@ class PhoneL10nEn extends PhoneL10n {
   @override
   String get about =>
       'Purrcept Go · Android companion for Purrcept Engine. Derived from dsh-Go by ccch1mneyyy. Source: github.com/Windpicker-owo/Purrcept-Go · AGPL-3.0.';
+
+  @override
+  String get companionFallback => 'Your companion';
+
+  @override
+  String get activityReady => 'Here with you';
+
+  @override
+  String get activityReceiving => 'Your message reached the computer';
+
+  @override
+  String get activityProcessing => 'Taking in the current inputs';
+
+  @override
+  String get activityThinking => 'Thinking';
+
+  @override
+  String get activityActing => 'Taking action';
+
+  @override
+  String get activityOffline => 'Connection is offline';
+
+  @override
+  String get activityConnecting => 'Finding your Engine';
+
+  @override
+  String get activitySynchronizing => 'Syncing live status';
+
+  @override
+  String get activityUnavailable => 'Connected · activity unavailable';
+
+  @override
+  String get activityStarting => 'Engine is getting ready';
+
+  @override
+  String get detailReady => 'Send a thought, or carry on with your day.';
+
+  @override
+  String get detailReceiving =>
+      'The message is recorded. Waiting for the agent to take it into a turn.';
+
+  @override
+  String get detailProcessing =>
+      'A turn has started. Thought and action progress will appear here.';
+
+  @override
+  String get detailThinking =>
+      'Your companion is thinking. You can keep chatting.';
+
+  @override
+  String get detailActing =>
+      'An action is running. Its outcome will follow the actual result.';
+
+  @override
+  String get detailOffline =>
+      'Messages saved on this phone will sync after reconnecting. Live activity is unknown.';
+
+  @override
+  String get detailConnecting =>
+      'Saved messages stay here while the connection returns.';
+
+  @override
+  String get detailSynchronizing =>
+      'The connection is up. Waiting for the first authoritative status.';
+
+  @override
+  String get detailUnavailable =>
+      'This computer app does not provide live progress yet. You can keep chatting and update it later.';
+
+  @override
+  String get detailStarting =>
+      'The computer is preparing its agent. Message admission and thought are separate.';
+
+  @override
+  String get messageWaiting => 'In the inbox · waiting for a turn';
+
+  @override
+  String get messageClaimed => 'Taken into a turn';
+
+  @override
+  String get messageThinking => 'Current turn · thinking';
+
+  @override
+  String get messageActing => 'Current turn · action running';
+
+  @override
+  String get messageFinished => 'This turn has finished';
+
+  @override
+  String get messageRecorded => 'Recorded during rest';
+
+  @override
+  String get messageFailed => 'This turn did not finish successfully';
+
+  @override
+  String get messageStale => 'Accepted · reconnect to refresh progress';
+
+  @override
+  String get activityDetails => 'What this status means';
+
+  @override
+  String get statusNotReply =>
+      'Processing a message does not always produce a reply. Actions and messages are shown only after they actually happen.';
+
+  @override
+  String get actionPhone => 'Working with the phone';
+
+  @override
+  String get actionComputer => 'Working with the computer';
+
+  @override
+  String get actionNotebook => 'Organizing notes';
+
+  @override
+  String get actionBrowser => 'Looking up information';
+
+  @override
+  String get actionMessage => 'Sending a message';
+
+  @override
+  String get conversationHint => 'A thought, a question, your day…';
+
+  @override
+  String get setupWelcome => 'Bring your companion along';
+
+  @override
+  String get setupWelcomeBody =>
+      'Your companion lives on your computer. This phone is a window for conversations and, when you allow it, a way to act on your phone.';
+
+  @override
+  String get setupBegin => 'Let’s connect';
+
+  @override
+  String get setupComputer => 'First, your computer';
+
+  @override
+  String get setupComputerBody =>
+      'Your companion stays on the computer. Put this phone and the computer on the same Wi-Fi, or use the private network you already configured.';
+
+  @override
+  String get setupComputerSteps =>
+      'Open Engine’s WebUI on your computer, then Devices → Connect Android phone. For first-time setup, open Phone connection settings, choose the computer address, preview and save, then restart Engine normally. Select Show pairing QR code and return here to scan.';
+
+  @override
+  String get setupComputerHelp => 'No QR code?';
+
+  @override
+  String get setupComputerTrouble =>
+      'Select Show pairing QR code on Engine’s Devices page. Refresh an expired QR without restarting Engine. If Phone is not enabled, save its settings there and restart normally. If already paired, connect directly from this phone.';
+
+  @override
+  String get setupHaveQr => 'The QR code is ready';
+
+  @override
+  String get setupBack => 'Back';
+
+  @override
+  String get setupChoices => 'Make it yours';
+
+  @override
+  String get setupChoicesBody =>
+      'Pairing is saved. You can chat now. The permissions below are optional and can be changed later in Device.';
+
+  @override
+  String get setupNotifications => 'Know when a message arrives';
+
+  @override
+  String get setupNotificationsBody =>
+      'Allow notifications to see new messages while using other apps. You can still chat without them.';
+
+  @override
+  String get setupEnableNotifications => 'Allow message notifications';
+
+  @override
+  String get setupNotificationsReady => 'Notifications are enabled';
+
+  @override
+  String get setupControl => 'Let your companion use this phone';
+
+  @override
+  String get setupControlBody =>
+      'For screen reading and gestures, enable Purrcept Go in Android Accessibility, then turn on Allow device control. Your companion still has to establish a control session explicitly. Chat needs neither permission.';
+
+  @override
+  String get setupOpenAccessibility => 'Open Accessibility settings';
+
+  @override
+  String get setupStartChat => 'Start chatting';
+
+  @override
+  String get setupRetry => 'Try again';
+
+  @override
+  String setupProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get activityClosing => 'Engine is finishing up';
+
+  @override
+  String get activityStopped => 'Engine has stopped';
+
+  @override
+  String get activityFailed => 'Engine needs attention';
+
+  @override
+  String get detailClosing =>
+      'The computer is closing its agent. Existing actions may still be finishing.';
+
+  @override
+  String get detailStopped =>
+      'Start Engine on your computer to continue. Saved messages stay on this phone.';
+
+  @override
+  String get detailFailed =>
+      'Check Engine on your computer. The phone cannot infer current work from this failure.';
+
+  @override
+  String get messageDetails => 'Message progress';
+
+  @override
+  String get messageDetailsHint =>
+      'Tap the status of a message to see its last known progress.';
+
+  @override
+  String get recentAction => 'Last associated action';
+
+  @override
+  String get receiptConfirmed => 'Execution receipt confirmed';
+
+  @override
+  String get receiptFailed => 'Execution failed';
+
+  @override
+  String get receiptUnknown => 'Outcome unknown';
+
+  @override
+  String get receiptStarted => 'Dispatched · no result observed yet';
+
+  @override
+  String get noAssociatedAction =>
+      'No associated action has been reported in this observation.';
+
+  @override
+  String get receiptExplanation =>
+      'This is the last recorded call, not a complete action history. A confirmed receipt does not guarantee that the app on the phone finished its business task.';
+
+  @override
+  String get messageProgressUnavailable =>
+      'Accepted · current progress unavailable';
+
+  @override
+  String get messageProgressUnavailableDetail =>
+      'The computer has not provided a fresh status for this message. Confirmed outcomes are kept. Without a current record, the phone cannot say whether this message is still being processed or has finished.';
+
+  @override
+  String get actionNamePhone => 'Phone operation';
+
+  @override
+  String get actionNameComputer => 'Computer operation';
+
+  @override
+  String get actionNameNotebook => 'Note organization';
+
+  @override
+  String get actionNameBrowser => 'Web operation';
+
+  @override
+  String get actionNameMessage => 'Message delivery';
+
+  @override
+  String get actionNameOther => 'Action';
+
+  @override
+  String get pairingNetworkError =>
+      'The computer connection failed before pairing completed. Check the address, app Wi-Fi permission or proxy settings, then refresh and scan a new QR.';
+
+  @override
+  String get networkTimeoutError =>
+      'The computer connection timed out. Check Wi-Fi, proxy settings or network client isolation.';
+
+  @override
+  String get computerUnreachableError =>
+      'The computer’s Phone service is unreachable. Check Engine, the pairing address and the port.';
+
+  @override
+  String get computerNotFoundError =>
+      'The computer address could not be resolved. Check it in Engine WebUI.';
+
+  @override
+  String get networkPermissionError =>
+      'The system blocked this app’s network access. Allow Purrcept Go to use Wi-Fi in app network permissions.';
+
+  @override
+  String get certificateDateError =>
+      'Certificate date validation failed. Check the phone and computer clocks, then the certificate expiry.';
+
+  @override
+  String get certificateMismatchError =>
+      'The computer certificate does not match the QR. Refresh the QR in Engine WebUI and scan it again.';
+
+  @override
+  String get tlsConnectionError =>
+      'The secure TLS connection failed. Check phone or network proxy settings and the phone and computer clocks.';
+
+  @override
+  String get copyConnectionError => 'Copy connection error details';
 }

@@ -16,3 +16,39 @@ abstract final class Cel {
   static const space = 16.0;
   static const contentMax = 1600.0;
 }
+
+/// Mobile-specific shapes, anatomy and motion; see docs/mobile-experience.md.
+abstract final class MobileTokens {
+  static const hero = Color(0xFFE3EBFD);
+  static const fur = Color(0xFFFFFDF7);
+  static const furShade = Color(0xFFDBE3F1);
+  static const blush = Color(0xFFF6BDB5);
+  static const darkCanvas = Color(0xFF111925);
+  static const darkSurface = Color(0xFF1B2636);
+  static const darkSunken = Color(0xFF162130);
+  static const darkInk = Color(0xFFEDF2FC);
+  static const darkMuted = Color(0xFFB4BFD2);
+  static const darkHero = Color(0xFF243757);
+  static const darkBrand = Color(0xFFA8C2FF);
+  static const darkActive = Color(0xFF75D8D8);
+  static const darkWaiting = Color(0xFFF0C479);
+  static const darkFailed = Color(0xFFFFB3AB);
+  static const panelRadius = 24.0;
+  static const bubbleRadius = 20.0;
+  static const heroRadius = 32.0;
+  static const avatarSize = 60.0;
+  static const bodySize = 16.0;
+  static const labelSize = 13.0;
+  static const titleSize = 26.0;
+  static const displaySize = 34.0;
+  static const lineHeight = 1.45;
+  static const contentMax = 680.0;
+  static const springMass = 1.0;
+  static const springStiffness = 340.0;
+  static const springDamping = 29.0;
+  static const pressScale = 0.97;
+  static const effects = Duration(milliseconds: 120);
+  static const blink = Duration(milliseconds: 180);
+  static const blinkInterval = Duration(milliseconds: 5200);
+  static const workingPulse = Duration(milliseconds: 2400);
+}

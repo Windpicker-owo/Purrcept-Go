@@ -120,4 +120,64 @@ class ChatJournalTest {
         journal.enqueue("猫".repeat(19000))
         assertEquals(1, journal.pending().size)
     }
+
+    /** Owned processing facts survive reopen, but a stale version or another input cannot replace them. */
+    @Test fun processingFactsAreOwnedAndMonotonic() {
+        val cache = Cache()
+        val journal = cache.journal()
+        journal.enqueue("hello", "m1")
+        journal.received(event())
+        fun progress(version: Long, stage: String, inputId: String = "input-1") = JSONObject()
+            .put("message_id", "m1").put("input_id", inputId).put("version", version).put("stage", stage)
+        journal.processing(org.json.JSONArray().put(progress(2, "processed")))
+        journal.processing(org.json.JSONArray().put(progress(1, "processing")))
+        journal.processing(org.json.JSONArray().put(progress(99, "failed", "unrelated")))
+        journal.processing(org.json.JSONArray().put(progress(2, "processed")
+            .put("last_action", JSONObject().put("path", "me.phone.screen").put("state", "confirmed"))))
+        val message = cache.journal().messages().getJSONObject(0)
+        assertEquals("processed", message.getJSONObject("processing").getString("stage"))
+        assertEquals("confirmed", message.getJSONObject("processing").getJSONObject("last_action").getString("state"))
+        assertNull(cache.get("progress:unrelated"))
+        assertEquals(setOf("message_id", "text", "occurred_at"), journal.enqueue("new", "m2").keys().asSequence().toSet())
+    }
+
+    /** Ephemeral connection revisions cannot resurrect old work, while a verified public name is durable. */
+    @Test fun experienceClearsLiveStateOnDisconnectAndRejectsOldRevisions() {
+        val cache = Cache()
+        val experience = EngineExperience(cache)
+        experience.connected(org.json.JSONArray().put("engine_state"))
+        fun state(revision: Long, name: String) = JSONObject().put("revision", revision)
+            .put("subject_name", name).put("host_phase", "running").put("observed_at", 100.0)
+            .put("activity", JSONObject().put("phase", "thinking"))
+            .put("messages", org.json.JSONArray())
+        assertTrue(experience.receive(state(2, "小白")))
+        assertFalse(experience.receive(state(1, "旧名字")))
+        assertEquals("小白", experience.name())
+        experience.disconnected()
+        assertNull(experience.current)
+        assertEquals("小白", EngineExperience(cache).name())
+        experience.connected(org.json.JSONArray().put("engine_state"))
+        assertTrue(experience.receive(state(1, "新名字")))
+        assertEquals("新名字", experience.name())
+    }
+
+    /** Invalid phases are rejected before public identity is changed. */
+    @Test fun malformedExperienceCannotMutateIdentity() {
+        val experience = EngineExperience(Cache())
+        experience.connected(org.json.JSONArray().put("engine_state"))
+        val invalid = JSONObject().put("revision", 1).put("subject_name", "untrusted")
+            .put("host_phase", "running").put("observed_at", 100.0)
+            .put("activity", JSONObject().put("phase", "made-up"))
+            .put("messages", org.json.JSONArray())
+        assertThrows(IllegalArgumentException::class.java) { experience.receive(invalid) }
+        assertNull(experience.name())
+        assertNull(experience.current)
+        invalid.put("activity", JSONObject().put("phase", "idle"))
+            .put("messages", org.json.JSONArray().put(JSONObject().put("message_id", "m1")
+                .put("input_id", "input-1").put("version", 1).put("stage", "processing").put("reason", "test")
+                .put("last_action", JSONObject().put("path", "me.phone.screen").put("state", "invented"))))
+        assertThrows(IllegalArgumentException::class.java) { experience.receive(invalid) }
+        assertNull(experience.name())
+        assertNull(experience.current)
+    }
 }

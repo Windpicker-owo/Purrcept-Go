@@ -339,5 +339,45 @@
       "radius": "8px",
       "padding": "6px 8px"
     }
+  },
+  "mobile": {
+    "colors": {
+      "hero": "#E3EBFD",
+      "fur": "#FFFDF7",
+      "furShade": "#DBE3F1",
+      "blush": "#F6BDB5",
+      "darkCanvas": "#111925",
+      "darkSurface": "#1B2636",
+      "darkSunken": "#162130",
+      "darkInk": "#EDF2FC",
+      "darkMuted": "#B4BFD2",
+      "darkHero": "#243757",
+      "darkBrand": "#A8C2FF",
+      "darkActive": "#75D8D8",
+      "darkWaiting": "#F0C479",
+      "darkFailed": "#FFB3AB"
+    },
+    "metrics": {
+      "panelRadius": 24,
+      "bubbleRadius": 20,
+      "heroRadius": 32,
+      "avatarSize": 60,
+      "bodySize": 16,
+      "labelSize": 13,
+      "titleSize": 26,
+      "displaySize": 34,
+      "lineHeight": 1.45,
+      "contentMax": 680,
+      "springMass": 1,
+      "springStiffness": 340,
+      "springDamping": 29,
+      "pressScale": 0.97
+    },
+    "durations": {
+      "effects": 120,
+      "blink": 180,
+      "blinkInterval": 5200,
+      "workingPulse": 2400
+    }
   }
 }

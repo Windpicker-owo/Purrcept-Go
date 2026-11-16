@@ -70,22 +70,38 @@ class MainActivity : FlutterFragmentActivity() {
                         .addExtra(Intents.Scan.SHOW_MISSING_CAMERA_PERMISSION_DIALOG, false))
                 }
                 "online" -> {
-                    if (Build.VERSION.SDK_INT >= 33) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
                     ContextCompat.startForegroundService(this, Intent(this, DeviceService::class.java).setAction("online"))
                     result.success(null)
                 }
                 "offline" -> { startService(Intent(this, DeviceService::class.java).setAction("stop")); result.success(null) }
                 "control" -> { native.setControlAllowed(call.argument<Boolean>("allowed") == true); result.success(null) }
+                "notifications" -> {
+                    // The first explicit request may show Android's dialog; later requests always have a recovery route.
+                    val preferences = getSharedPreferences("permissions", Context.MODE_PRIVATE)
+                    if (Build.VERSION.SDK_INT >= 33 &&
+                        !preferences.getBoolean("notifications_requested", false) &&
+                        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        preferences.edit().putBoolean("notifications_requested", true).apply()
+                        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+                    } else startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
+                    result.success(null)
+                }
                 "accessibility" -> { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)); result.success(null) }
                 else -> {
                     if (call.method == "forget") native.setControlAllowed(false)
                     val args = JSONObject(call.arguments as? Map<*, *> ?: emptyMap<String, String>())
                     native.submit(call.method, args) { value, error ->
-                        if (error != null) result.error(error, error, null) else result.success(value?.toString())
+                        if (error != null) result.error(error, error, value?.optString("diagnostics")) else result.success(value?.toString())
                     }
                 }
             }
         }
+    }
+
+    /** Permission results change only system facts; refresh the guide after Android closes its dialog. */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        events?.success(null)
     }
 
     override fun onResume() { super.onResume(); events?.success(null) }

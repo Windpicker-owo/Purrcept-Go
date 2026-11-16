@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   check-contributor:
-    if: github.repository == 'ccch1mneyyy/dsh-Go'
+    if: github.repository == 'Windpicker-owo/Purrcept-Go'
     runs-on: ubuntu-latest
     permissions:
       contents: read

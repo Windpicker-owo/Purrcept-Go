@@ -238,7 +238,7 @@ abstract class PhoneL10n {
   /// No description provided for @emptyChat.
   ///
   /// In en, this message translates to:
-  /// **'Say something to Purrcept. She can message you here too.'**
+  /// **'A place to pick up the conversation.'**
   String get emptyChat;
 
   /// No description provided for @you.
@@ -256,7 +256,7 @@ abstract class PhoneL10n {
   /// No description provided for @messageHint.
   ///
   /// In en, this message translates to:
-  /// **'Message Purrcept'**
+  /// **'A thought, a question, your day…'**
   String get messageHint;
 
   /// No description provided for @send.
@@ -474,6 +474,552 @@ abstract class PhoneL10n {
   /// In en, this message translates to:
   /// **'Purrcept Go · Android companion for Purrcept Engine. Derived from dsh-Go by ccch1mneyyy. Source: github.com/Windpicker-owo/Purrcept-Go · AGPL-3.0.'**
   String get about;
+
+  /// No description provided for @companionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Your companion'**
+  String get companionFallback;
+
+  /// No description provided for @activityReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Here with you'**
+  String get activityReady;
+
+  /// No description provided for @activityReceiving.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message reached the computer'**
+  String get activityReceiving;
+
+  /// No description provided for @activityProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking in the current inputs'**
+  String get activityProcessing;
+
+  /// No description provided for @activityThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get activityThinking;
+
+  /// No description provided for @activityActing.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking action'**
+  String get activityActing;
+
+  /// No description provided for @activityOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection is offline'**
+  String get activityOffline;
+
+  /// No description provided for @activityConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding your Engine'**
+  String get activityConnecting;
+
+  /// No description provided for @activitySynchronizing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing live status'**
+  String get activitySynchronizing;
+
+  /// No description provided for @activityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected · activity unavailable'**
+  String get activityUnavailable;
+
+  /// No description provided for @activityStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine is getting ready'**
+  String get activityStarting;
+
+  /// No description provided for @detailReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a thought, or carry on with your day.'**
+  String get detailReady;
+
+  /// No description provided for @detailReceiving.
+  ///
+  /// In en, this message translates to:
+  /// **'The message is recorded. Waiting for the agent to take it into a turn.'**
+  String get detailReceiving;
+
+  /// No description provided for @detailProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'A turn has started. Thought and action progress will appear here.'**
+  String get detailProcessing;
+
+  /// No description provided for @detailThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Your companion is thinking. You can keep chatting.'**
+  String get detailThinking;
+
+  /// No description provided for @detailActing.
+  ///
+  /// In en, this message translates to:
+  /// **'An action is running. Its outcome will follow the actual result.'**
+  String get detailActing;
+
+  /// No description provided for @detailOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages saved on this phone will sync after reconnecting. Live activity is unknown.'**
+  String get detailOffline;
+
+  /// No description provided for @detailConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved messages stay here while the connection returns.'**
+  String get detailConnecting;
+
+  /// No description provided for @detailSynchronizing.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection is up. Waiting for the first authoritative status.'**
+  String get detailSynchronizing;
+
+  /// No description provided for @detailUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This computer app does not provide live progress yet. You can keep chatting and update it later.'**
+  String get detailUnavailable;
+
+  /// No description provided for @detailStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer is preparing its agent. Message admission and thought are separate.'**
+  String get detailStarting;
+
+  /// No description provided for @messageWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'In the inbox · waiting for a turn'**
+  String get messageWaiting;
+
+  /// No description provided for @messageClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken into a turn'**
+  String get messageClaimed;
+
+  /// No description provided for @messageThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Current turn · thinking'**
+  String get messageThinking;
+
+  /// No description provided for @messageActing.
+  ///
+  /// In en, this message translates to:
+  /// **'Current turn · action running'**
+  String get messageActing;
+
+  /// No description provided for @messageFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'This turn has finished'**
+  String get messageFinished;
+
+  /// No description provided for @messageRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded during rest'**
+  String get messageRecorded;
+
+  /// No description provided for @messageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This turn did not finish successfully'**
+  String get messageFailed;
+
+  /// No description provided for @messageStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted · reconnect to refresh progress'**
+  String get messageStale;
+
+  /// No description provided for @activityDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'What this status means'**
+  String get activityDetails;
+
+  /// No description provided for @statusNotReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing a message does not always produce a reply. Actions and messages are shown only after they actually happen.'**
+  String get statusNotReply;
+
+  /// No description provided for @actionPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Working with the phone'**
+  String get actionPhone;
+
+  /// No description provided for @actionComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'Working with the computer'**
+  String get actionComputer;
+
+  /// No description provided for @actionNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizing notes'**
+  String get actionNotebook;
+
+  /// No description provided for @actionBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up information'**
+  String get actionBrowser;
+
+  /// No description provided for @actionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending a message'**
+  String get actionMessage;
+
+  /// No description provided for @conversationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A thought, a question, your day…'**
+  String get conversationHint;
+
+  /// No description provided for @setupWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring your companion along'**
+  String get setupWelcome;
+
+  /// No description provided for @setupWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your companion lives on your computer. This phone is a window for conversations and, when you allow it, a way to act on your phone.'**
+  String get setupWelcomeBody;
+
+  /// No description provided for @setupBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s connect'**
+  String get setupBegin;
+
+  /// No description provided for @setupComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'First, your computer'**
+  String get setupComputer;
+
+  /// No description provided for @setupComputerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your companion stays on the computer. Put this phone and the computer on the same Wi-Fi, or use the private network you already configured.'**
+  String get setupComputerBody;
+
+  /// No description provided for @setupComputerSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Engine’s WebUI on your computer, then Devices → Connect Android phone. For first-time setup, open Phone connection settings, choose the computer address, preview and save, then restart Engine normally. Select Show pairing QR code and return here to scan.'**
+  String get setupComputerSteps;
+
+  /// No description provided for @setupComputerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'No QR code?'**
+  String get setupComputerHelp;
+
+  /// No description provided for @setupComputerTrouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Show pairing QR code on Engine’s Devices page. Refresh an expired QR without restarting Engine. If Phone is not enabled, save its settings there and restart normally. If already paired, connect directly from this phone.'**
+  String get setupComputerTrouble;
+
+  /// No description provided for @setupHaveQr.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR code is ready'**
+  String get setupHaveQr;
+
+  /// No description provided for @setupBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get setupBack;
+
+  /// No description provided for @setupChoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it yours'**
+  String get setupChoices;
+
+  /// No description provided for @setupChoicesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing is saved. You can chat now. The permissions below are optional and can be changed later in Device.'**
+  String get setupChoicesBody;
+
+  /// No description provided for @setupNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Know when a message arrives'**
+  String get setupNotifications;
+
+  /// No description provided for @setupNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notifications to see new messages while using other apps. You can still chat without them.'**
+  String get setupNotificationsBody;
+
+  /// No description provided for @setupEnableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow message notifications'**
+  String get setupEnableNotifications;
+
+  /// No description provided for @setupNotificationsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are enabled'**
+  String get setupNotificationsReady;
+
+  /// No description provided for @setupControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Let your companion use this phone'**
+  String get setupControl;
+
+  /// No description provided for @setupControlBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For screen reading and gestures, enable Purrcept Go in Android Accessibility, then turn on Allow device control. Your companion still has to establish a control session explicitly. Chat needs neither permission.'**
+  String get setupControlBody;
+
+  /// No description provided for @setupOpenAccessibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Accessibility settings'**
+  String get setupOpenAccessibility;
+
+  /// No description provided for @setupStartChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start chatting'**
+  String get setupStartChat;
+
+  /// No description provided for @setupRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get setupRetry;
+
+  /// No description provided for @setupProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String setupProgress(int current, int total);
+
+  /// No description provided for @activityClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine is finishing up'**
+  String get activityClosing;
+
+  /// No description provided for @activityStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine has stopped'**
+  String get activityStopped;
+
+  /// No description provided for @activityFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine needs attention'**
+  String get activityFailed;
+
+  /// No description provided for @detailClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer is closing its agent. Existing actions may still be finishing.'**
+  String get detailClosing;
+
+  /// No description provided for @detailStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Engine on your computer to continue. Saved messages stay on this phone.'**
+  String get detailStopped;
+
+  /// No description provided for @detailFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Engine on your computer. The phone cannot infer current work from this failure.'**
+  String get detailFailed;
+
+  /// No description provided for @messageDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Message progress'**
+  String get messageDetails;
+
+  /// No description provided for @messageDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the status of a message to see its last known progress.'**
+  String get messageDetailsHint;
+
+  /// No description provided for @recentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Last associated action'**
+  String get recentAction;
+
+  /// No description provided for @receiptConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution receipt confirmed'**
+  String get receiptConfirmed;
+
+  /// No description provided for @receiptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution failed'**
+  String get receiptFailed;
+
+  /// No description provided for @receiptUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome unknown'**
+  String get receiptUnknown;
+
+  /// No description provided for @receiptStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatched · no result observed yet'**
+  String get receiptStarted;
+
+  /// No description provided for @noAssociatedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'No associated action has been reported in this observation.'**
+  String get noAssociatedAction;
+
+  /// No description provided for @receiptExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the last recorded call, not a complete action history. A confirmed receipt does not guarantee that the app on the phone finished its business task.'**
+  String get receiptExplanation;
+
+  /// No description provided for @messageProgressUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted · current progress unavailable'**
+  String get messageProgressUnavailable;
+
+  /// No description provided for @messageProgressUnavailableDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer has not provided a fresh status for this message. Confirmed outcomes are kept. Without a current record, the phone cannot say whether this message is still being processed or has finished.'**
+  String get messageProgressUnavailableDetail;
+
+  /// No description provided for @actionNamePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone operation'**
+  String get actionNamePhone;
+
+  /// No description provided for @actionNameComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'Computer operation'**
+  String get actionNameComputer;
+
+  /// No description provided for @actionNameNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Note organization'**
+  String get actionNameNotebook;
+
+  /// No description provided for @actionNameBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Web operation'**
+  String get actionNameBrowser;
+
+  /// No description provided for @actionNameMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message delivery'**
+  String get actionNameMessage;
+
+  /// No description provided for @actionNameOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Action'**
+  String get actionNameOther;
+
+  /// No description provided for @pairingNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer connection failed before pairing completed. Check the address, app Wi-Fi permission or proxy settings, then refresh and scan a new QR.'**
+  String get pairingNetworkError;
+
+  /// No description provided for @networkTimeoutError.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer connection timed out. Check Wi-Fi, proxy settings or network client isolation.'**
+  String get networkTimeoutError;
+
+  /// No description provided for @computerUnreachableError.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer’s Phone service is unreachable. Check Engine, the pairing address and the port.'**
+  String get computerUnreachableError;
+
+  /// No description provided for @computerNotFoundError.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer address could not be resolved. Check it in Engine WebUI.'**
+  String get computerNotFoundError;
+
+  /// No description provided for @networkPermissionError.
+  ///
+  /// In en, this message translates to:
+  /// **'The system blocked this app’s network access. Allow Purrcept Go to use Wi-Fi in app network permissions.'**
+  String get networkPermissionError;
+
+  /// No description provided for @certificateDateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate date validation failed. Check the phone and computer clocks, then the certificate expiry.'**
+  String get certificateDateError;
+
+  /// No description provided for @certificateMismatchError.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer certificate does not match the QR. Refresh the QR in Engine WebUI and scan it again.'**
+  String get certificateMismatchError;
+
+  /// No description provided for @tlsConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'The secure TLS connection failed. Check phone or network proxy settings and the phone and computer clocks.'**
+  String get tlsConnectionError;
+
+  /// No description provided for @copyConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy connection error details'**
+  String get copyConnectionError;
 }
 
 class _PhoneL10nDelegate extends LocalizationsDelegate<PhoneL10n> {

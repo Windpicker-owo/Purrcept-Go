@@ -1,38 +1,5 @@
 include: package:flutter_lints/flutter.yaml
-# Upstream DSH sources remain reference material while native modules are ported.
-# Only main.dart and purrcept/ enter the active application; no DSH client dependency is linked.
 analyzer:
   exclude:
     - build/**
     - android/**
-    - tool/**
-    - test/access/**
-    - test/**
-    - lib/app.dart
-    - lib/companion/**
-    - lib/dev/**
-    - lib/diagnostics/**
-    - lib/forum/**
-    - lib/l10n/**
-    - lib/launch/**
-    - lib/links/**
-    - lib/media/**
-    - lib/notify/**
-    - lib/performance/**
-    - lib/pets/**
-    - lib/phone/**
-    - lib/plugins/**
-    - lib/remote/**
-    - lib/runtime/**
-    - lib/share_code/**
-    - lib/share_hosted/**
-    - lib/speech/**
-    - lib/state/**
-    - lib/tavern/**
-    - lib/ui/**
-    - lib/ui_config/**
-    - lib/update/**
-    - lib/usage/**
-    - lib/voice/**
-    - lib/wallpaper/**
-    - lib/workshop/**

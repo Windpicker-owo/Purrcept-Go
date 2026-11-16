@@ -15,30 +15,24 @@ Purrcept 或模型。** 用户消息成为主体刺激，主体通过显式聊�
 - 界面结构、截图、元素点击、文字输入、滑动、应用启动和系统按键。
 - 命令执行前记录意图；未知结果不自动重做。
 - 聊天区分手机已保存、Engine 已接管和已同步；离线消息自动补送，接管回执先到时气泡不会消失。
+- 从 Engine 读取主体名字；主脑接手、真实思考和真实行动分别呈现，消息状态可展开最近执行回执。
+- 首次引导、系统深色、大字体、减少动效，以及由真实状态驱动的 Purrcept 白猫。
 
 这是一版开发实现。连续观察、聊天图片与语音、桌宠和主脑已读
 回执尚未接入；真实 Android 权限、后台和操作效果仍需测试手机验收。
 
 ## 连接电脑
 
-电脑使用同级 `purrcept_engine` 的 `phone` extra，按
-[`docs/phone.md`](../purrcept_engine/docs/phone.md) 创建 TLS 身份并配置 Phone
-插件。启动 Engine 并开启 Phone 配对后，在本仓库根目录运行：
+电脑端操作在 **Engine WebUI → 设备 → 连接安卓手机** 完成。
 
-```powershell
-uv run tooling/pair_phone.py
-```
+1. 首次未启用 Phone 时，展开「设置手机连接」，选择电脑地址和端口，预览并保存。
+2. 正常重启 Engine 使新增插件或监听配置生效；原配置会备份，已有证书会保留。
+3. 点击「显示配对二维码」，手机按首次引导扫码、核对电脑，再配对连接。
+4. 邀请过期可在 WebUI 直接刷新，无需重启 Engine。已配对手机可以直接连接。
 
-电脑浏览器会打开本机二维码窗口。手机点击“扫码配对”，确认电脑地址和
-证书指纹，再点击“配对并连接”，无需手动输入 JSON。相机只在扫码时申请
-权限；取消扫描或取消确认不会配对。扫码不依赖 Google Play 服务。
-仅聊天无需开启无障碍或设备操控，配对也不会自动授予这些权限。
-
-工具默认读取同级 `purrcept_engine/.purrcept/phone-invitation.json`，自定义
-位置使用 `--invitation <路径>`。邀请有效120秒，过期需重新开启 Engine 的
-配对窗口；二维码页面会跟随文件更新并撤下已过期或已消费的邀请。工具只读
-现有邀请，不启动或修改 Engine。保持工具运行，结束时按 Ctrl+C。
-无法扫码时，可展开手机的“其他方式：粘贴邀请”，使用剪贴板或粘贴原邀请。
+Go 只承担手机端扫码与连接，无需电脑端 Go 程序或手动输入 JSON。详见同级
+[Engine 接入说明](../purrcept_engine/docs/phone.md)。扫码不依赖 Google Play；聊天
+无需无障碍或设备操控，配对也不自动授予操控权限。
 
 ## 构建和验证
 
@@ -69,12 +63,11 @@ Flutter 3.50 的标准本地化生成器仍引用已弃用的 SDK 本地化类�
 ```powershell
 python tooling/export_cel.py
 python tooling/export_cel.py --check
-uv run --with qrcode==8.2 python -m unittest discover -s tooling -p test_pair_phone.py -v
 ```
 
 当前活跃 Dart 入口为 `app/lib/purrcept/`，Android 源集为
-`app/android/app/src/purrcept/`。旧 DSH 源码保留作移植参考，已移出新应用
-依赖和构建源集；旧运行时、市场、分享和统计服务不会随新应用启用。
+`app/android/app/src/purrcept/`。已移除未使用的 DSH 参考源码、运行时、市场、分享服务、模型和旧界面测试图。
+需要查看上游实现时请使用 Git 历史；许可证与来源声明继续保留。
 
 ## 来源与许可证
 

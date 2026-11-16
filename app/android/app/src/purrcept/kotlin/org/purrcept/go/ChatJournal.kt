@@ -74,6 +74,27 @@ internal class ChatJournal(
     /** Read the durable stream prefix, which can contain gaps in the server's global sequence. */
     fun through(): Long = records.get("cursor")?.sequence ?: 0L
 
+    /** Persist only owned input facts. Processing versions cannot regress after reconnect. */
+    fun processing(items: JSONArray) {
+        transaction {
+            for (index in 0 until items.length()) {
+                val item = items.getJSONObject(index)
+                val identity = item.getString("message_id")
+                val inputId = item.getString("input_id")
+                val local = records.get("msg:$identity") ?: records.get("accepted:$identity") ?: continue
+                val known = JSONObject(local.payload)
+                if (known.optString("input_id") != inputId) continue
+                val previous = records.get("progress:$inputId")
+                val version = item.getLong("version")
+                // The same input version may gain a newer call receipt without changing input stage.
+                // Connection revisions were checked before this hand-off; equal input versions are valid.
+                if (previous == null || previous.sequence <= version) {
+                    records.put(Record("progress:$inputId", "progress", item.toString(), version))
+                }
+            }
+        }
+    }
+
     /**
      * Project one bubble per synced or pending message. An accepted unsynced submission stays visible
      * across process death. These states prove persistence/admission only, never that the agent read
@@ -82,7 +103,10 @@ internal class ChatJournal(
     fun messages(): JSONArray {
         val result = JSONArray()
         for (record in records.list("message")) {
-            result.put(JSONObject(record.payload).put("delivery_state", "synced"))
+            val message = JSONObject(record.payload).put("delivery_state", "synced")
+            val inputId = message.optString("input_id")
+            records.get("progress:$inputId")?.let { message.put("processing", JSONObject(it.payload)) }
+            result.put(message)
         }
         for (record in records.list("outbox")) {
             val message = JSONObject(record.payload)

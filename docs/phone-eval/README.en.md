@@ -2,6 +2,9 @@
 
 [中文](README.md)
 
+This standalone evaluation bank does not claim every case is implemented in Purrcept Go.
+Record skipped/unsupported for unavailable DSH SafetyGate, root/Sui or skill replay paths.
+
 This is an independently written bank of **28 synthetic cases**, a local HTML fixture, and a minimal event recorder. `tooling/phone_eval.py` records, validates and summarizes local evidence attestations. It does not control devices, call models, or prove that manually entered evidence is true. Current validation consists of Python tests and simulated examples; there are no measured device success results.
 
 The design draws on Mika's stratified cases, postcondition verification and holdout management. Cases, wording and code were written independently. Mika's full-answer / screen-read ledger storage is not adopted.
